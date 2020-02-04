@@ -1,0 +1,6 @@
+a = 10000  #coefficient1 in objection function
+b = 1000 #coefficient2 in objection function
+c0 = 0.5 #unit capacitance of wire (fF/um)
+rho_f = 0.8
+Slin = 30 #primary slew in in clock tree
+buffer_lib_size = 5
