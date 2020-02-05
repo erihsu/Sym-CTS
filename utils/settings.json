@@ -5,7 +5,7 @@
         "voltage":"V",
         "capacitance":"fF",
         "resistance":"ohm"
-    },
+        },
     "library":{
         "voltage":0.55,
         "input_slew_lower":30,
@@ -14,7 +14,7 @@
         "output_load_lower":15,
         "output_load_upper":200,
         "output_load":[15,50,80,120,160,200]
-    },
+        },
     "symcts":{
         "buffer_lib_size":5,
         "a":10000,
@@ -22,5 +22,5 @@
         "c0":0.5,
         "rho_f":0.8,
         "Slin":30
-    }
+            }
 }
