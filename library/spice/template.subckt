@@ -1,6 +1,0 @@
-.subckt buf0 in out vdd
-mp1  tmp in  vdd vdd   pmos l=45n w=2u
-mn1  tmp in  0   0     nmos l=45n w=1.37u 
-mp2  out tmp  vdd vdd   pmos l=45n w=2u
-mn2  out tmp  0   0     nmos l=45n w=1.37u 
-.ends buf0
