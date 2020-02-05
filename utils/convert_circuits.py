@@ -16,8 +16,6 @@ class convertion():
 
     def bnpPre(self):
         bnp_pre = []
-        min_delta = self.num_real_sinks
-        subtree_num = 0
         max_level = int(math.ceil(math.sqrt(self.num_real_sinks)))
         # # ensurance branch=2 and branch=3 can exist at the same time
         for i in range(1, max_level):
@@ -57,7 +55,7 @@ class convertion():
 
                 # update horizontal plot constraints
                 if int(data[1]) < self.minX:
-                    self.minX = int(data1[1])
+                    self.minX = int(data[1])
                 elif int(data[1]) > self.maxX:
                     self.maxX = int(data[1])
 
@@ -83,7 +81,7 @@ class convertion():
 
     def export_with_pseudo(self,filename="../evaluation/input/ispd09f11"):
         with open(filename,'w') as f:
-            for i,line enumerate(in self.head):
+            for i,line in enumerate(self.head):
                 if i < 2:
                     f.write(line)
                 else:
