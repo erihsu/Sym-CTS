@@ -8,12 +8,12 @@
 # After excuation, new buffer model and lookup table will be generated under library/spice and library/lib respectively.
 
 import json
-
+import pdb
 
 class genLut():
 
     def __init__(self,spice_file,buffer_index):
-        self.global_include_path = "." # mosfet parameter file path
+        self.global_include_path = "../library/tech/45nm_LP.pm" # mosfet parameter file path
         self.buffer_spice_path = spice_file # buffer spice file path
         self.input_slew = []
         self.output_load = []
@@ -23,7 +23,7 @@ class genLut():
         self.space_unit = "nm"
         self.capacitance_unit = "fF"
         self.mc_times = 1000
-        self.sim_length = 5000
+        self.sim_length = 50000
         self.sim_precision = 10
     
     def read_settings(self,file_path='settings.json'):
@@ -37,13 +37,17 @@ class genLut():
             self.capacitance_unit = a_dict["unit"]["capacitance"]
 
     def gen_global_include(self):
-        output_str = ".include " + str(self.global_include_path) + "\n" + \
-                     ".include " + str(self.buffer_spice_path) + "\n"
+        output_str = ".include \"" + str(self.global_include_path) + "\"\n" + \
+                     ".include \"" + str(self.buffer_spice_path) + "\"\n"
+        return output_str
+
+    def gen_options(self):
+        output_str = ".Option Cell_Char = Yes, MeasFile=1, MCBrief=6, Random_Generator = MOA\n"
         return output_str
 
     def gen_parameter(self):
-        output_str = ".param SLEW_I=0" + str(self.time_unit) + "\n" +\
-                     ".param CAP_O =0" + str(self.capacitance_unit) + "\n" +\
+        output_str = ".param SLEW_I = 10" + str(self.time_unit) + "\n" +\
+                     ".param CAP_O = 10" + str(self.capacitance_unit) + "\n" +\
                      ".param S_Voltage=" + str(self.voltage) + "\n"
         return output_str
     
@@ -56,10 +60,10 @@ class genLut():
         
         data_block_index = 0
         output_str = ".DATA LutIndex\n" +\
-                      "SLEW_I CAP_O\n"
+                      "Index SLEW_I CAP_O\n"
         for slew in self.input_slew:
             for capload in self.output_load:
-                output += "{} {} {}\n".format(data_block_index,slew,capload)
+                output_str += "{} {}{} {}{}\n".format(data_block_index,slew,self.time_unit,capload,self.capacitance_unit)
                 data_block_index += 1
         
         output_str += ".ENDDATA\n"
@@ -67,7 +71,7 @@ class genLut():
         return output_str
     
     def gen_tran(self):
-        output_str = ".tran {} {} SWEEP DATA=LutIndex Monte = {}\n".format(self.sim_precision,self.sim_length,self.mc_times)
+        output_str = ".tran {}{} {}{} SWEEP DATA=LutIndex Monte = {}\n".format(self.sim_precision,self.time_unit,self.sim_length,self.time_unit,self.mc_times)
         return output_str
 
     def gen_measure(self,rise_or_fall="rise"):
@@ -89,7 +93,7 @@ class genLut():
     def gen_source(self):
         output_str = "V0 vdd 0 DC=S_Voltage\n" +\
                      "vpulse in 0 pulse( v1 v2 td tr tf pw per )\n" +\
-                     ".param v1=0v v2=S_Voltage td=5ns tr=SLEW_I" + str(self.time_unit) + "tf=SLEW_I" + str(self.time_unit) + "pw=20ns per=50ns\n" +\
+                     ".param v1=0v v2=S_Voltage td=5ns tr=SLEW_I " + "tf=SLEW_I " + "pw=20ns per=50ns\n" +\
                      ".IC v(out) = 0v\n"
         return output_str
     
@@ -98,6 +102,7 @@ class genLut():
         with open(filename,'w') as f:
             f.write("No Title\n")
             f.write(self.gen_global_include())
+            f.write(self.gen_options())
             f.write(self.gen_parameter())
             f.write(self.gen_tran())
             f.write(self.gen_source())
@@ -113,6 +118,7 @@ def gen_spice():
     for buffer_index in range(buffer_lib_size):
         buffer_spice_file = "../library/spice/buf{}.subckt".format(buffer_index)
         lut = genLut(buffer_spice_file,buffer_index)
+        lut.read_settings()
         lut.write_spice()
 
 if __name__ == "__main__":
