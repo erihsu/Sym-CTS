@@ -58,9 +58,9 @@ class Snake_wire(Man_wire):
             # update points while snaking(1 point)
             self.__points.append(G_Point(self.turning[index].location))
 
-            # update wires while snaking
-            self.__wires.append(wire(self.startpoint,self.__points[-1]))
-            self.__wires.append(wire(self.__points[-1],self.endpoint))
+            # update wires while snaking(2 wires)
+            self.__wires.append(wire(self.startpoint,self.__points[0]))
+            self.__wires.append(wire(self.__points[0],self.endpoint))
 
         elif length >= 2*min_length and length <5*min_length:
             step = (length-min_length)/4
@@ -71,10 +71,11 @@ class Snake_wire(Man_wire):
 
             self.__points.append(G_Point(self.end+real_sign*step*op1_1))
 
-            # update wires while snaking
+            # update wires while snaking(4 wires)
             self.__wires.append(wire(self.startpoint,self.__points[0]))
             self.__wires.append(wire(self.__points[0],self.__points[1]))
-            self.__wires.append(wire(self.__points[1],self.endpoint))
+            self.__wires.append(wire(self.__points[1],self.__points[2]))
+            self.__wires.append(wire(self.__points[2],self.endpoint))
 
         elif length >= 5*min_length and length <10*min_length:
             step = (length-min_length)/8
@@ -95,15 +96,18 @@ class Snake_wire(Man_wire):
             self.__points.append(G_Point(self.end+real_sign*step*op1_1-image_sign*width2*op1_2))
             self.__points.append(G_Point(self.end+real_sign*step*op1_1))
 
-            # update wires while snaking
+            # update wires while snaking(10 wires)
             self.__wires.append(wire(self.startpoint,self.__points[0]))
-            for i in range(7):
+            for i in range(8):
                 self.__wires.append(wire(self.__points[i],self.__points[i+1]))
-            self.__wires.append(wire(self.__points[7],self.endpoint))
+            self.__wires.append(wire(self.__points[8],self.endpoint))
 
         else:
-            self.__wires.append(wire(self.startpoint,self.endpoint))
-            self.__points.append(M_Point(location=(self.startpoint.location+self.endpoint.location)/2))
+            # update points while snaking(1 points)
+            self.__points.append(G_Point(location=(self.startpoint.location+self.endpoint.location)/2))
+            # update wires while snaking(2 wires)                          
+            self.__wires.append(wire(self.startpoint,self.__points[0]))
+            self.__wires.append(wire(self.__points[0],self.endpoint))
             print("given length {} is not considerate compared with {}".format(length,min_length))
 
     def getPoints(self):
