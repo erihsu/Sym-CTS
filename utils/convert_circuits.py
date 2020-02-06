@@ -30,7 +30,7 @@ class convertion():
                 break
         self.num_pseudo_sinks = self.num_sinks - self.num_real_sinks
 
-    def readOriginFile(self, file_path="../circuits/ispd/ispd09f11"):
+    def readOriginFile(self, file_path="../circuits/ex_ispd/ispd09f11_small"):
 
         with open(file_path,'r') as f:
             area = f.readline()

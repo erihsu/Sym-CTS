@@ -10,10 +10,10 @@
         "voltage":0.55,
         "input_slew_lower":30,
         "input_slew_upper":500,
-        "input_slew":[30,60,100,200,500],
+        "input_slew":[50,55,60,65,70,75,80],
         "output_load_lower":15,
         "output_load_upper":200,
-        "output_load":[15,50,80,120,160,200]
+        "output_load":[15,20,25,30,35,40,45]
         },
     "symcts":{
         "buffer_lib_size":5,
