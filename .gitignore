@@ -1,3 +1,6 @@
 .vscode/
 .DS_Store
 workspace/
+__pycache__/
+clockpath.txt
+solution.txt
