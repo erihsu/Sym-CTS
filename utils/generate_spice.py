@@ -8,7 +8,7 @@ import os
 def generate_spice(lib_path,buffer_name,buffer_size,min_length):
     
     with open("{}/{}.subckt".format(lib_path,buffer_name),'w') as f:
-        write_str = ".subckt " + str(buffer_name) + "in out vdd\n" +\
+        write_str = ".subckt " + str(buffer_name) + " in out vdd\n" +\
                     "mp1  tmp in  vdd vdd   pmos l={} w={}u\n".format(min_length,buffer_size[0]) +\
                     "mn1  tmp in  0   0     nmos l={} w={}u\n".format(min_length,buffer_size[1]) +\
                     "mp2  out tmp  vdd vdd   pmos l={} w={}u\n".format(min_length,buffer_size[0]) +\
@@ -30,5 +30,5 @@ def generate_lib(lib_path):
 
 if __name__ == "__main__":
     lib_path = "../library/spice"
-    os.remove("{}/*".format(lib_path))
+    # os.remove("{}/*".format(lib_path))
     generate_lib(lib_path)
