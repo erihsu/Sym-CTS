@@ -17,7 +17,7 @@ buffer_lib = [0,1,2,3,4]
 branch_level = len(cts.num_branchs) 
 buffer_lib_size = len(buffer_lib)
 
-geneticAlgorithm(buffer_lib_size=buffer_lib_size ,branch_level=branch_level ,popSize=50, eliteSize=10, mutationRate=0.1, generations=30)
+geneticAlgorithm(buffer_lib_size=buffer_lib_size ,branch_level=branch_level ,popSize=30, eliteSize=5, mutationRate=0.1, generations=20)
 cts.buffering()
 
 # Step 3: export netlist of clock tree

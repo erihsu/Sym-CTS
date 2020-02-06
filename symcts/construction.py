@@ -1,8 +1,9 @@
 import numpy as np
 from partition import partition
 from merge import merge,get_seg_length
-from point import Sink, M_Point
+from point import Sink, M_Point,Point
 from buffer import candidate,clk_buffer
+from wire import wire,Snake_wire
 
 class topology():
 
@@ -18,7 +19,6 @@ class topology():
 		self.num_sinks = 0
 
 	def loadSinks(self,sinks,num_branchs):
-		# initialze partition
 		self.sinks = sinks
 		self.num_branchs = num_branchs
 
@@ -47,7 +47,6 @@ class topology():
 		for i,branch in enumerate(branchs):
 			seg_length = []
 			candidate = []
-			wire_buffer = []
 			if i == 0:
 				# merge sinks
 				merged_points = []
@@ -64,10 +63,10 @@ class topology():
 					merged_point,nodes,wires = merge(points[branch*j:branch*(j+1)],target_seg_length,branch)
 					candidate_points,candidate_buffer = self.candidateBuffer(merged_point)
 					candidate.append(candidate_buffer)
-					merged_point = candidate_points[-1]
+					new_merged_point = candidate_points[-1]
 					self.nodes = self.nodes + candidate_points + nodes
 					self.wires = self.wires + wires
-					merged_points.append(merged_point)
+					merged_points.append(new_merged_point)
 				self.candidates.append(candidate)
 
 			elif i < (l_branch - 1):
@@ -85,11 +84,11 @@ class topology():
 				for j in range(int(merge_times)):
 					merged_point,nodes,wires = merge(points[branch*j:branch*(j+1)],target_seg_length,branch)
 					candidate_points,candidate_buffer = self.candidateBuffer(merged_point)
-					merged_point = candidate_points[-1]
 					candidate.append(candidate_buffer)
+					new_merged_point = candidate_points[-1]
 					self.nodes = self.nodes + candidate_points + nodes
 					self.wires = self.wires + wires
-					new_merged_points.append(merged_point)
+					new_merged_points.append(new_merged_point)
 
 				self.candidates.append(candidate)
 				merged_points = new_merged_points
@@ -104,8 +103,7 @@ class topology():
 				self.nodes = self.nodes + candidate_points + nodes
 				self.wires = self.wires + wires
 
-				self.candidates.append(candidate)
-
+		
 		self.wirelength.append(root.location.real+root.location.imag)
 		# reverse order to top-down
 		self.wirelength = self.wirelength[::-1]
@@ -159,16 +157,17 @@ class topology():
 
 		buffer_type.reverse()
 
+		# wrap node id from "num_sinks+1"
 		for i in range(len(self.nodes)):
 			self.nodes[i].set_id(self.num_sinks+i+1)
 
 		for i,candidate in enumerate(self.candidates):
-			for j,a_candidate in enumerate(candidate):
+			for a_candidate in candidate:
 				startpoint = a_candidate.startpoint
 				endpoint   = a_candidate.endpoint
 				self.buffers.append(clk_buffer(startpoint,endpoint,buffer_type[i]))
 				
-	def exportNetlist(self,filename='result.txt'):
+	def exportNetlist(self,filename='../workspace/result'):
 		# # #
 	    # write out clock tree netlist. the format keep same with ispd2009 output result for evaluation.
 	    # # #

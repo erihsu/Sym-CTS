@@ -7,13 +7,15 @@
 from scipy import interpolate
 import numpy as np 
 import os 
+import json
 
-def readindex(file="../genLut/ngspice/buflib/indices.txt"):
+def readindex(file="../utils/settings.json"):
 	# read input_slew and capacitance_load index from indices.txt
 	with open(file,'r') as f:
-		slew_in_index = f.readline().strip('\n').split(',')
-		cap_out_index = f.readline().strip('\n').split(',')
-	return list(map(int,slew_in_index)), list(map(int,cap_out_index))
+		a_dict = json.loads(f.read())
+		input_slew = a_dict["library"]["input_slew"]
+		output_load = a_dict["library"]["output_load"]
+	return input_slew, output_load
 
 def readlut(bufsize,filepath,option='rise'):
 	# assume lut keep 7x7 shape
@@ -46,7 +48,7 @@ def init_Lut(lut,x,y,bufsize):
 	return model
 
 
-def load_lut(bufsize,filepath="../genLut/ngspice/buflib"):
+def load_lut(bufsize,filepath="../library/lib"):
 	if not os.path.exists(filepath):
 		print("file path not exist !")
 	else:

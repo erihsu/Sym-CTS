@@ -3,18 +3,22 @@ from point import M_Point
 
 def merge_two_points(points,seg_length):
 
+	new_points = []
+	new_wires = []
 	end_point = M_Point(location=(points[0].location+points[1].location)/2)
 	end_point.set_gid(points[0].get_gid())
 	wire1 = Snake_wire(points[0],end_point)
 	wire2 = Snake_wire(points[1],end_point)
 	wire1.snaking(seg_length)
 	wire2.snaking(seg_length)
-	points = wire1.getPoints() + wire2.getPoints()
-	wires = wire1.getWires() + wire2.getWires()
-	return end_point,points,wires
+	new_points = wire1.getPoints() + wire2.getPoints()
+	new_wires = wire1.getWires() + wire2.getWires()
+	return end_point,new_points,new_wires
 
 def merge_three_points(points,seg_length):
 
+	new_points = []
+	new_wires = []
 	end_point_location = get_center_of_three(points[0].location,points[1].location,points[2].location)
 	end_point = M_Point(location=end_point_location)
 	end_point.set_gid(points[0].get_gid())
@@ -26,10 +30,10 @@ def merge_three_points(points,seg_length):
 	wire2.snaking(seg_length)
 	wire3.snaking(seg_length)
 
-	points = wire1.getPoints() + wire2.getPoints() + wire3.getPoints()
-	wires  = wire1.getWires() + wire2.getWires() + wire3.getWires()
+	new_points = wire1.getPoints() + wire2.getPoints() + wire3.getPoints()
+	new_wires  = wire1.getWires() + wire2.getWires() + wire3.getWires()
 
-	return end_point,points,wires
+	return end_point,new_points,new_wires
 
 def merge(points,seg_length,number=2):
 	# the merge function return endpoints(M_Points) and a list of wires(each wire contain a bunch of G_Points)

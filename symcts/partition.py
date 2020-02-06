@@ -12,27 +12,8 @@ class partition():
         self.num_sinks = 0
         self.num_branchs = []
 
-    def bnpPre(self):
-        bnp_pre = []
-        min_delta = self.num_real_sinks
-        subtree_num = 0
-        max_level = int(np.ceil(np.sqrt(self.num_real_sinks)))
-        # # ensurance branch=2 and branch=3 can exist at the same time
-        for i in range(1, max_level):
-            for j in range(1, i):
-                bnp_pre.append((2**j)*(3**(i-j)))
-
-        bnp_pre = sorted(bnp_pre)
-        # find the closed number to the sink_num in the bnp_pre list
-        for i, number in enumerate(bnp_pre):
-            if number >= self.num_real_sinks:
-                self.num_sinks = number
-                break
-        self.num_pseudo_sinks = self.num_sinks - self.num_real_sinks
-
     def bnp(self):
         # n represent number of subtree needed in the design considering 2-3 mixed branch planning
-        self.bnpPre()
         n = self.num_sinks
         while n > 1:
             for i in range(2, int(n+1)):
@@ -42,7 +23,7 @@ class partition():
                     break
         # self.num_branchs.reverse()
 
-    def readSinks(self, origin_file="../circuits/ispd/ispd09f11",converted_file="../evaluation/input/ispd09f11"):
+    def readSinks(self, origin_file="../circuits/ex_ispd/ispd09f11_small",converted_file="../evaluation/input/ispd09f11"):
 
         with open(origin_file,'r') as f:       
             # skip first and second Line
