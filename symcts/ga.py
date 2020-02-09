@@ -1,3 +1,4 @@
+import os
 import numpy as np, random,operator,pandas as pd
 from fitness import Fitness
 # the code below is partially editted from another repository 
@@ -136,7 +137,7 @@ def geneticAlgorithm(buffer_lib_size, branch_level, popSize, eliteSize, mutation
 	bestStrategy = pop[bestStrategyIndex]
 
 	# export best solution
-	with open("solution.txt",'w') as f:
+	with open("{}/symcts/solution.txt".format(os.getenv('SYMCTS')),'w') as f:
 		for buffer_size in bestStrategy:
 			f.write(str(buffer_size)+"\n")
 

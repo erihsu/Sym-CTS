@@ -9,9 +9,9 @@ import numpy as np
 import os 
 import json
 
-def readindex(file="../utils/settings.json"):
+def readindex():
 	# read input_slew and capacitance_load index from indices.txt
-	with open(file,'r') as f:
+	with open("{}/utils/settings.json".format(os.getenv('SYMCTS')),'r') as f:
 		a_dict = json.loads(f.read())
 		input_slew = a_dict["library"]["input_slew"]
 		output_load = a_dict["library"]["output_load"]
@@ -48,7 +48,7 @@ def init_Lut(lut,x,y,bufsize):
 	return model
 
 
-def load_lut(bufsize,filepath="../library/lib"):
+def load_lut(bufsize,filepath="{}/library/lib".format(os.getenv('SYMCTS'))):
 	if not os.path.exists(filepath):
 		print("file path not exist !")
 	else:

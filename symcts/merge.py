@@ -7,8 +7,8 @@ def merge_two_points(points,seg_length):
 	new_wires = []
 	end_point = M_Point(location=(points[0].location+points[1].location)/2)
 	end_point.set_gid(points[0].get_gid())
-	wire1 = Snake_wire(points[0],end_point)
-	wire2 = Snake_wire(points[1],end_point)
+	wire1 = Snake_wire(end_point,points[0])
+	wire2 = Snake_wire(end_point,points[1])
 	wire1.snaking(seg_length)
 	wire2.snaking(seg_length)
 	new_points = wire1.getPoints() + wire2.getPoints()
@@ -22,9 +22,9 @@ def merge_three_points(points,seg_length):
 	end_point_location = get_center_of_three(points[0].location,points[1].location,points[2].location)
 	end_point = M_Point(location=end_point_location)
 	end_point.set_gid(points[0].get_gid())
-	wire1 = Snake_wire(points[0],end_point)
-	wire2 = Snake_wire(points[1],end_point)
-	wire3 = Snake_wire(points[2],end_point)
+	wire1 = Snake_wire(end_point,points[0])
+	wire2 = Snake_wire(end_point,points[1])
+	wire3 = Snake_wire(end_point,points[2])
 
 	wire1.snaking(seg_length)
 	wire2.snaking(seg_length)
@@ -38,21 +38,15 @@ def merge_three_points(points,seg_length):
 def merge(points,seg_length,number=2):
 	# the merge function return endpoints(M_Points) and a list of wires(each wire contain a bunch of G_Points)
 
-	if number == 2:
-		if len(points) == 2:
-			return merge_two_points(points,seg_length)
-		else:
-			print("please make sure input contain two points")
-			return None
-	elif number == 3:
-		if len(points) == 3:
-			return merge_three_points(points,seg_length)
-		else:
-			print("please make sure input contain three points")
-			return None
+	if number == 2 and len(points) == 2:
+		parent,nodes,wires = merge_two_points(points,seg_length)
+	elif number == 3 and len(points ) == 3:
+		parent,nodes,wires = merge_three_points(points,seg_length)
 	else:
-		return None
-
+		print("please make sure input contain two or three points")
+		exit(1)
+	return parent,nodes,wires
+			
 def get_center_of_three(loca1,loca2,loca3):
 	# input: location of three points
 	# output: location of center point

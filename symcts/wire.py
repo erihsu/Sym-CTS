@@ -22,8 +22,8 @@ class wire():
 class Man_wire(wire):
     def __init__(self, startpoint, endpoint):
         super().__init__(startpoint,endpoint)
-        self.turning = [G_Point(location=complex(self.start.real,self.end.imag)),\
-                        G_Point(location=complex(self.start.imag,self.end.real))]
+        self.turning = [G_Point(location=complex(self.end.real,self.start.imag)),\
+                        G_Point(location=complex(self.start.real,self.end.imag))]
 
     def getLength(self):
         vec = self.end - self.start
@@ -67,7 +67,8 @@ class Snake_wire(Man_wire):
             # update points while snaking(3 points)
             self.__points.append(G_Point(self.start-image_sign*step*op1_2))
 
-            self.__points.append(G_Point(self.turning[index].location+step*complex(real_sign,-image_sign)))
+            # self.__points.append(G_Point(self.turning[index].location+step*complex(real_sign,-image_sign)))
+            self.__points.append(G_Point(complex((self.end+real_sign*step*op1_1).real,(self.start-image_sign*step*op1_2).imag)))
 
             self.__points.append(G_Point(self.end+real_sign*step*op1_1))
 
@@ -81,14 +82,15 @@ class Snake_wire(Man_wire):
             step = (length-min_length)/8
             width1 = abs(vec.real)/3
             width2 = abs(vec.imag)/3
-            # update points while snaking(9 points)
+            # update points while snaking(11 points)
             self.__points.append(G_Point(self.start-image_sign*step*op1_2))
             self.__points.append(G_Point(self.start-image_sign*step*op1_2+real_sign*width1*op1_1))
             self.__points.append(G_Point(self.start+real_sign*width1*op1_1))
             self.__points.append(G_Point(self.start+2*real_sign*width1*op1_1))
             self.__points.append(G_Point(self.start-image_sign*step*op1_2+2*real_sign*width1*op1_1))
 
-            self.__points.append(G_Point(self.turning[index].location+step*complex(real_sign,-image_sign)))
+            # self.__points.append(G_Point(self.turning[index].location+step*complex(real_sign,-image_sign)))
+            self.__points.append(G_Point(complex((self.end+real_sign*step*op1_1).real,(self.start-image_sign*step*op1_2).imag)))
 
             self.__points.append(G_Point(self.end+real_sign*step*op1_1-2*image_sign*width2*op1_2))
             self.__points.append(G_Point(self.end-2*image_sign*width2*op1_2))
@@ -96,16 +98,22 @@ class Snake_wire(Man_wire):
             self.__points.append(G_Point(self.end+real_sign*step*op1_1-image_sign*width2*op1_2))
             self.__points.append(G_Point(self.end+real_sign*step*op1_1))
 
-            # update wires while snaking(10 wires)
+            # update wires while snaking(12 wires)
             self.__wires.append(wire(self.startpoint,self.__points[0]))
-            for i in range(8):
+            for i in range(10):
                 self.__wires.append(wire(self.__points[i],self.__points[i+1]))
-            self.__wires.append(wire(self.__points[8],self.endpoint))
+            self.__wires.append(wire(self.__points[10],self.endpoint))
 
         else:
-            # update points while snaking(1 points)
-            self.__points.append(G_Point(location=(self.startpoint.location+self.endpoint.location)/2))
-            # update wires while snaking(2 wires)                          
+            # # update points while snaking(1 points)
+            # self.__points.append(G_Point(location=(self.startpoint.location+self.endpoint.location)/2))
+            # # update wires while snaking(2 wires)                          
+            # self.__wires.append(wire(self.startpoint,self.__points[0]))
+            # self.__wires.append(wire(self.__points[0],self.endpoint))
+
+            # update points while snaking(1 point)
+            self.__points.append(G_Point(self.turning[index].location))
+            # update wires while snaking(2 wires)
             self.__wires.append(wire(self.startpoint,self.__points[0]))
             self.__wires.append(wire(self.__points[0],self.endpoint))
             print("given length {} is not considerate compared with {}".format(length,min_length))

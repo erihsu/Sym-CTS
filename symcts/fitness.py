@@ -1,6 +1,7 @@
 # this file define a fittness function used in clock path variation evaluation 
 import load_lut as load
 import numpy as np
+import os
 
 class Fitness:
 	def __init__(self,strategy):
@@ -9,21 +10,21 @@ class Fitness:
 		self.readClockpath()
 		self.readConfig()
 
-	def readConfig(self,file='./config.txt'):
+	def readConfig(self):
 		self.f1 = np.array([5, 10, 20, 40, 80])  # reflect between buffer size and buffer input capacitance
 		self.max_buffer = len(self.f1)
 		self.sink_cap = 15
-		with open(file,'r') as f:
+		with open('{}/symcts/config.txt'.format(os.getenv('SYMCTS')),'r') as f:
 			self.a     = float(f.readline().split(' ')[2])
 			self.b     = float(f.readline().split(' ')[2])
 			self.c0    = float(f.readline().split(' ')[2])
 			self.rho_f = float(f.readline().split(' ')[2])
 			self.Slin  = float(f.readline().split(' ')[2])
 
-	def readClockpath(self,file='./clockpath.txt'):
+	def readClockpath(self):
 		self.num = []
 		self.WL = []
-		with open(file,'r') as f:
+		with open('{}/symcts/clockpath.txt'.format(os.getenv('SYMCTS')),'r') as f:
 			self.L = int(f.readline()) # read in clock tree level
 			self.U = int(f.readline()) # read in sink number
 			for i in range(self.L):

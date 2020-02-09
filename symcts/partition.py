@@ -1,5 +1,6 @@
 import cmath
 import numpy as np
+import os
 
 from point import Sink
 
@@ -23,15 +24,15 @@ class partition():
                     break
         # self.num_branchs.reverse()
 
-    def readSinks(self, origin_file="../circuits/ex_ispd/ispd09f11_small",converted_file="../evaluation/input/ispd09f11"):
+    def readSinks(self):
 
-        with open(origin_file,'r') as f:       
+        with open("{}/circuits/ex_ispd/ispd09f11_small".format(os.getenv('SYMCTS')),'r') as f:       
             # skip first and second Line
             f.readline()
             f.readline()
             self.num_real_sinks = int(f.readline().split(" ")[2])
             
-        with open(converted_file,'r') as f:
+        with open("{}/evaluation/input/ispd09f11".format(os.getenv('SYMCTS')),'r') as f:
 
             # skip first and second Line
             f.readline()
@@ -49,7 +50,7 @@ class partition():
                 else:
                     s = Sink(location,label='pseudo')
 
-                s.set_id(i)
+                s.set_id(i+1)
                 self.sinks.append(s)                           
 
 
