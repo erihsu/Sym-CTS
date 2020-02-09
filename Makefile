@@ -1,14 +1,17 @@
 all:
-	cd symcts
-	python3 flow.py
-	cd ..
-	mkdir workspace & cd workspace
-	cp ../evaluation/extract.pl .
-	cp ../evaluation/input/ispd09f11 .
-	cp ../library/tech/45nm_LP.pm .
-	cp ../library/spice/* .
-	perl perl extract.pl ispd09f11 result 45nm_LP.pm
+	mkdir $(SYMCTS)/workspace
+	mkdir $(SYMCTS)/evaluation/input
+	mkdir $(SYMCTS)/evaluation/output
+	python3 $(SYMCTS)/utils/convert_circuits.py
+	python3 $(SYMCTS)/symcts/flow.py
+	cp $(SYMCTS)/utils/extract.pl $(SYMCTS)/workspace
+	cp $(SYMCTS)/utils/view.pl $(SYMCTS)/workspace
+	cp $(SYMCTS)/utils/evaluation.py $(SYMCTS)/workspace
+	cp $(SYMCTS)/evaluation/input/ispd09f11 $(SYMCTS)/workspace
+	cp $(SYMCTS)/evaluation/output/result $(SYMCTS)/workspace
+	cp $(SYMCTS)/library/tech/45nm_LP.pm $(SYMCTS)/workspace
+	cp $(SYMCTS)/library/spice/* $(SYMCTS)/workspace
 clean:
-	rm -f workspace/*
-	rm -f library/spice/*
-	rm -f library/lib/*
+	rm -rf workspace
+	rm -rf $(SYMCTS)/evaluation/input
+	rm -rf $(SYMCTS)/evaluation/output
