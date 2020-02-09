@@ -5,114 +5,172 @@
 # @Last Modified time: 2020-01-15 20:56:01
 
 import os
+import json
 import numpy as np
 
 class evaluation:
 
-	def __init__(self,sink_num,node_num):
-		self.skew = [0,0] # skew mean and skew sigma
-		self.slew = [0,0] # max slew mean and max slew sigma
-		self.simulation_time = 50 #ns
-		self.simulation_voltage = 0.6 #v
-		self.max_path = 0 # use sink node to represent path
-		self.min_path = 0 # use sink node to represent path
-		self.max_slew_node = 0
-		self.sink_num = sink_num
-		self.node_num = node_num
-		self.mc_times = 5
+    def __init__(self):
+        self.skew = [0,0] # skew mean and skew sigma
+        self.slew = [0,0] # max slew mean and max slew sigma
+        self.voltage = 0.6 #v
+        self.input_slew = 0
+        self.max_path = 0 # use sink node to represent path
+        self.min_path = 0 # use sink node to represent path
+        self.max_slew_node = 0
+        self.sinks = []
+        self.nodes = []
+        self.rise_or_fall = "rise"
+        self.mc_times = 100
+        self.time_unit = "ps"
+        self.capacitance_unit = "fF"
+        self.space_unit = "um"
+        self.sim_length = 100000
+        self.sim_precision = 10
+
+    def read_settings(self):
+        with open('{}/utils/settings.json'.format(os.getenv('SYMCTS')),'r') as f:
+            a_dict = json.loads(f.read())
+            self.mc_times = a_dict["evaluation"]["mc_times"]
+            self.voltage = a_dict["evaluation"]["voltage"]
+            self.rise_or_fall = a_dict["evaluation"]["rise_or_fall"]
+            self.time_unit = a_dict["unit"]["time"]
+            self.space_unit = a_dict["unit"]["space"]
+            self.capacitance_unit = a_dict["unit"]["capacitance"]
+            self.input_slew = a_dict["evaluation"]["initial_input_slew"]
+        
+        with open('{}/evaluation/output/watchpoint.json'.format(os.getenv('SYMCTS')),'r') as f:
+            a_dict = json.loads(f.read())
+            self.sinks = a_dict['sink']
+            self.nodes = a_dict['node']
 
 
-	def extract_min_max_path(self,file="delay.log"):
-		delay = np.loadtxt(file,dtype=float,usecols=2)
-		self.max_path = np.argmax(delay)
-		self.min_path = np.argmin(delay)
-		
-	def extract_max_slew_node(self,file="slew.log"):
-		slew = np.loadtxt(file,dtype=float,usecols=2)
-		self.max_slew_node = np.argmax(slew) + 1
+
+    def gen_common(self):
+        output_str = "*simple title\n" + \
+                     ".include \"45nm_LP.pm\"\n" +\
+                     ".include \"result.spice\"\n" +\
+                     ".param S_Voltage={}v\n".format(self.voltage) +\
+                     ".param SLEW_I={}{}\n".format(self.input_slew,self.time_unit) +\
+                     ".option MEASFORM=3\n"        
+        return output_str
+
+    def gen_source(self):
+        output_str = "V0 vdd 0 DC=S_Voltage\n" +\
+                     "vpulse n0 0 pulse( v1 v2 td tr tf pw per )\n" +\
+                     ".param v1=0v v2=S_Voltage td=5ns tr=SLEW_I " + "tf=SLEW_I " + "pw=20ns per=50ns\n"
+        return output_str
+
+    def gen_stage1_tran(self):
+        output_str = ".tran {}{} {}{}\n".format(self.sim_precision,self.time_unit,self.sim_length,self.time_unit)
+        return output_str
+    
+    def gen_stage2_tran(self):
+        output_str = ".tran {}{} {}{} MONTE={}\n".format(self.sim_precision,self.time_unit,self.sim_length,self.time_unit,self.mc_times)
+        return output_str
+
+    def gen_stage1_measure(self):
+        output_str = ""
+
+        for sink in self.sinks:
+            output_str += ".IC v(n{}) = 0v\n".format(sink)
+
+        for node in self.nodes:
+            output_str += ".IC v(n{}) = 0v\n".format(node)
+
+        if self.rise_or_fall == "rise":
+            for i,sink in enumerate(self.sinks):
+                output_str += ".measure TRAN delay{} TRIG v(n0) VAL='S_Voltage/2' RISE=1 TARG v(n{}) VAL='S_Voltage/2' RISE=1\n".format(i,sink)
+            for i,node in enumerate(self.nodes):
+                output_str += ".measure TRAN slew{} TRIG v(n{}) VAL='S_Voltage*0.3' RISE=1 TARG v(n{}) VAL='S_Voltage*0.7' RISE=1\n".format(i,node,node)
+
+        else:
+            for i,sink in enumerate(self.sinks):
+                output_str += ".measure TRAN delay{} TRIG v(n0) VAL='S_Voltage/2' FALL=1 TARG v(n{}) VAL='S_Voltage/2' FALL=1\n".format(i,sink)
+            for i,node in enumerate(self.nodes):
+                output_str += ".measure TRAN slew{} TRIG v(n{}) VAL='S_Voltage*0.7' FALL=1 TARG v(n{}) VAL='S_Voltage*0.3' FALL=1\n".format(i,node,node)
+        
+        return output_str
+
+    def gen_stage2_measure(self):
+        output_str = ""
+
+        output_str += ".IC v(n{}) = 0v\n".format(self.max_path)
+        output_str += ".IC v(n{}) = 0v\n".format(self.min_path)
+        output_str += ".IC v(n{}) = 0v\n".format(self.max_slew_node)
+        
+        if self.rise_or_fall == "rise":
+            output_str += ".measure TRAN skew TRIG v(n{}) VAL='S_Voltage/2' RISE=1 TARG v(n{}) VAL='S_Voltage/2' RISE=1\n".format(self.min_path,self.max_path)
+            output_str += ".measure TRAN max_slew TRIG v(n{}) VAL='S_Voltage*0.3' RISE=1 TARG v(n{}) VAL='S_Voltage*0.7' RISE=1\n".format(self.max_slew_node,self.max_slew_node)
+        else:
+            output_str += ".measure TRAN skew TRIG v(n{}) VAL='S_Voltage/2' FALL=1 TARG v(n{}) VAL='S_Voltage/2' FALL=1\n".format(self.min_path,self.max_path)
+            output_str += ".measure TRAN max_slew TRIG v(n{}) VAL='S_Voltage*0.7' FALL=1 TARG v(n{}) VAL='S_Voltage*0.3' FALL=1\n".format(self.max_slew_node,self.max_slew_node)
+        return output_str
+        
+    def gen_end(self):
+        output_str = ".end"
+        return output_str
+
+    def generate_stage1_control_file(self):
+        with open("{}/workspace/sim_control.sp".format(os.getenv('SYMCTS')),'w') as f:
+            f.write(self.gen_common())
+            f.write(self.gen_source())
+            f.write(self.gen_stage1_tran())
+            f.write(self.gen_stage1_measure())
+            f.write(self.gen_end())
+
+    def launch_simulator(self):
+        os.system("hspice sim_control.sp")
+    
+    def parse_from_mt(self):
+        delay_num = len(self.sinks)
+        slew_num = len(self.nodes)
+        with open("{}/workspace/sim_control.mt0.csv".format(os.getenv('SYMCTS')),'r') as f:
+            delay_and_slew = np.genfromtxt(f,delimiter=',',skip_header=4)
+        
+        if np.isnan(np.min(delay_and_slew)):
+            print("some nodes may be floating,please check netlist")
+            exit(1)
+        else:        
+            delays = delay_and_slew[:delay_num]
+            slews = delay_and_slew[delay_num:delay_num+slew_num]
+            self.max_path = np.argmax(delays)
+            self.min_path = np.argmin(delays)
+            self.max_slew_node = np.argmax(slews)
+        
+    def generate_stage2_control_file(self):
+        with open("{}/workspace/sim_control.sp".format(os.getenv('SYMCTS')),'w') as f:
+            f.write(self.gen_common())
+            f.write(self.gen_source())
+            f.write(self.gen_stage2_tran())
+            f.write(self.gen_stage2_measure())
+            f.write(self.gen_end())        
 
 
-	def generate_control_file(self,destination1="delay.log",destination2="slew.log"):
-		with open("sim_control.sp",'w') as f:
-			f.write("*simple title\n")
-			f.write(".control\n\tsource result.spice\n\tlet sink_num = {}\n\ttran 10p {}n\n"\
-				.format(self.sink_num,self.simulation_time))
-			# control for delay measurement
-			for i in range(self.sink_num):
-				f.write("\tmeas tran delay{} trig v(gin) val='0.5*vp' fall=1 targ v(n{}) val='0.5*vp' fall=1\n"\
-					.format(i,i+1))
-				f.write("\tprint delay{} >> ".format(i) + destination1 + "\n")
 
-			# control for slew measurement
-			for i in range(self.node_num):
-				# f.write("\tmeas tran slew{} trig v(n{}) val='0.9*vp' fall=1 targ v(n{}) val='0.1*vp' fall=1\n"\
-				# 	.format(i,i+1,i+1))
-				f.write("\tmeas tran slew{} trig v(n{}) val='0.99' fall=1 targ v(n{}) val='0.11' fall=1\n"\
-					.format(i,i+1,i+1))
-				f.write("\tprint slew{} >> ".format(i) + destination2 + "\n")
+    def get_statistics(self):
 
-			f.write("\tquit\n")
-			f.write(".endc\n.end\n")
+        skew = np.loadtxt("skew.log",dtype=float,usecols=2)
+        # slew = np.loadtxt("max_slew.log",dtype=float,usecols=2)
+        sskew = [np.mean(skew).astype(np.float32),np.std(skew).astype(np.float32)]
+        # sslew = [np.mean(slew).astype(np.float32),np.std(slew).astype(np.float32)]
+        return sskew
+        
 
-	def simulation_for_result(self):
-		str1 = "\tdefine gauss(nom, var, sig) (nom + (nom*var)/sig * sgauss(0))\n\tdefine agauss(nom, avar, sig) (nom + avar/sig * sgauss(0))\n\
-				\tlet n1vth0=@nmos[vth0]\n\tlet n1u0=@nmos[u0]\n\tlet n1tox=@nmos[toxref]\n\
-				\tlet p1vth0=@pmos[vth0]\n\tlet p1u0=@pmos[u0]\n\tlet p1tox=@pmos[toxref]\n\
-  				\tdowhile run <= mc_runs\n\t\tif run > 1\n\
-  				\t\t\taltermod @nmos[vth0] = gauss(n1vth0, 0.05, 3)\n\t\t\taltermod @nmos[u0] = gauss(n1u0, 0.05, 3)\n\
-      			\t\t\taltermod @nmos[toxref] = gauss(n1tox, 0.05, 3)\n\t\t\taltermod @pmos[vth0] = gauss(p1vth0, 0.05, 3)\n\
-      			\t\t\taltermod @pmos[u0] = gauss(p1u0, 0.05, 3)\n\t\t\taltermod @pmos[toxref] = gauss(p1tox, 0.05, 3)\n\t\tend\n\
-    			\t\tsave @xbuf[v] all\n"
 
-		str2 = "\t\tdestroy all\n\t\tlet run = run + 1\n\tend\n\trusage\n\tquit\n.endc\n.end\n"
-
-		with open("sim_control.sp",'w') as f:
-			f.write("*simple title\n")
-			f.write(".control\n\tlet mc_runs={}\n\tlet run = 1\n\tsource result.spice\n\tlet vp = {}\n\ttran 10p {}n\n"\
-				.format(self.mc_times,self.simulation_voltage,self.simulation_time))
-			f.write(str1)
-			f.write("\t\ttran 10p {}n\n".format(self.simulation_time))
-			f.write("\t\tmeas tran skew trig v(n{}) val=0.55 fall=1 targ v(n{}) val=0.55 fall=1\n".format(self.min_path,self.max_path))
-			# f.write("\t\tmeas tran slew trig v(n{}) val=0.99 fall=1 targ v(n{}) val=0.11 fall=1\n".format(self.max_slew_node,self.max_slew_node))
-			# f.write("\t\tprint skew >> skew.log\n\t\tprint slew >> max_slew.log\n")
-			f.write("\t\tprint skew >> skew.log\n")
-			f.write(str2)
-
-	def launch_simulator(self):
-		os.system("ngspice -b sim_control.sp")
-
-	def clean_logs(self):
-		os.system("rm *.log")
-
-	def get_statistics(self):
-
-		skew = np.loadtxt("skew.log",dtype=float,usecols=2)
-		# slew = np.loadtxt("max_slew.log",dtype=float,usecols=2)
-		sskew = [np.mean(skew).astype(np.float32),np.std(skew).astype(np.float32)]
-		# sslew = [np.mean(slew).astype(np.float32),np.std(slew).astype(np.float32)]
-		self.clean_logs()
-		return sskew
-
-	def get_result(self):
-		self.generate_control_file()
-
-		if os.path.exists("*.log"):
-			self.clean_logs()
-
-		self.launch_simulator()
-		self.extract_min_max_path()
-		# self.extract_max_slew_node()
-
-		# if os.path.exists("*.log"):
-		# 	self.clean_logs()
-
-		self.simulation_for_result()
-		self.launch_simulator()
-		return self.get_statistics()
+def main():
+    u = evaluation()
+    u.read_settings()
+    u.generate_stage1_control_file()
+    u.launch_simulator()
+    u.parse_from_mt()
+    u.generate_stage2_control_file()
+    u.launch_simulator()
+    u.get_statistics()
 
 
 if __name__ == "__main__":
-	main()
+    main()
 
 
 
