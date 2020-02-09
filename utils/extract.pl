@@ -36,6 +36,12 @@
 #   temp     deg celsius
 #   cap      fF
 
+
+######################################################################
+# Add-on:
+# extract.pl is mostly from original evaluation script. We remove some code from origin file.
+# If you want to use full function of ispd2009 evaluation,please download it from ispd2009 contest website
+######################################################################
 use Getopt::Std;
 use POSIX qw(ceil floor);
 
@@ -500,10 +506,7 @@ $sourceEndVolt = (1-$srcTrans)*$vdd;
 # Write spice files
 #
 #song:  写出spice文件
-#song:  写的是头部的部分
 open OUTFILE, "> $resultFile\.spice";
-print OUTFILE "* spice from $resultFileO\n";
-print OUTFILE ".include $modelCardFileO\n";
 for $i (0 .. ($#bufLibIdArr )) {
     open SUBCKTFILE, "$bufLibSubcktArr[$i]" or die $!;
     while (<SUBCKTFILE>){
@@ -574,12 +577,6 @@ for $i (0 .. ($#nodeIdArr )) {
         }
     }
 }
-print OUTFILE "*
-.param vp = $vdd
-vdd vdd 0 $vdd
-vdt gin 0 $vdd pwl(0n $sourceInitVolt, 0.2n $sourceInitVolt, 0.325n $sourceEndVolt, 3.0n $sourceEndVolt)
-";
-print OUTFILE "\n.end\n";
 close OUTFILE;
 $firstTime = 0;
 } # END of foreach $srcTrans (@srcTrans4Test)
