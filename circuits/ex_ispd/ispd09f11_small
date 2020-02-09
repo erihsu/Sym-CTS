@@ -126,11 +126,11 @@ num wirelib 2
 0 0.0001 0.0002
 1 0.0003 0.00016
 num buflib 5
-0 clkbuf0.subckt 0 5 40 61.2
-1 clkbuf1.subckt 0 10 50 55
-2 clkbuf2.subckt 0 20 60 50
-3 clkbuf3.subckt 0 40 70 45
-4 clkbuf4.subckt 0 80 80 40
+0 buf0.subckt 0 5 40 61.2
+1 buf1.subckt 0 10 50 55
+2 buf2.subckt 0 20 60 50
+3 buf3.subckt 0 40 70 45
+4 buf4.subckt 0 80 80 40
 simulation vdd 0.55
 limit slew 200
 limit cap 118000
