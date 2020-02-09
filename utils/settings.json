@@ -22,5 +22,12 @@
         "c0":0.5,
         "rho_f":0.8,
         "Slin":30
-            }
+            },
+    "evaluation":{
+        "voltage":0.6,
+        "mc_times":1000,
+        "rise_or_fall":"fall",
+        "initial_input_slew":50
+    }
+
 }
