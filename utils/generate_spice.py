@@ -18,7 +18,7 @@ def generate_spice(lib_path,buffer_name,buffer_size,min_length):
         f.write(write_str)
 
 def generate_lib(lib_path):
-    with open("buffer.json",'r') as f:
+    with open("{}/utils/buffer.json".format(os.getenv('SYMCTS')),'r') as f:
         a_dict = json.loads(f.read())
         buffers = a_dict['buffers']
         min_length = a_dict['length']
@@ -29,6 +29,6 @@ def generate_lib(lib_path):
 
 
 if __name__ == "__main__":
-    lib_path = "../library/spice"
+    lib_path = "{}/library/spice".format(os.getenv('SMYCTS'))
     # os.remove("{}/*".format(lib_path))
     generate_lib(lib_path)

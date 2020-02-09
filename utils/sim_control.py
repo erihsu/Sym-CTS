@@ -8,12 +8,12 @@
 # After excuation, new buffer model and lookup table will be generated under library/spice and library/lib respectively.
 
 import json
-import pdb
+import os
 
 class genLut():
 
     def __init__(self,spice_file,buffer_index):
-        self.global_include_path = "../library/tech/45nm_LP.pm" # mosfet parameter file path
+        self.global_include_path = "{}/library/tech/45nm_LP.pm".format(os.getenv('SYMCTS')) # mosfet parameter file path
         self.buffer_spice_path = spice_file # buffer spice file path
         self.input_slew = []
         self.output_load = []
@@ -26,8 +26,8 @@ class genLut():
         self.sim_length = 50000
         self.sim_precision = 10
     
-    def read_settings(self,file_path='settings.json'):
-        with open(file_path,'r') as f:
+    def read_settings(self):
+        with open('{}/utils/settings.json'.format(os.getenv('SYMCTS')),'r') as f:
             a_dict = json.loads(f.read())
             self.input_slew = a_dict["library"]["input_slew"]
             self.output_load = a_dict["library"]["output_load"]
@@ -97,9 +97,13 @@ class genLut():
                      ".IC v(out) = 0v\n"
         return output_str
     
-    def write_spice(self,filename="../workspace/for_lut.sp"):
+    def gen_end(self):
+        output_str = ".end"
+        return output_str
+    
+    def write_spice(self):
 
-        with open(filename,'w') as f:
+        with open("{}/workspace/for_lut.sp".format(os.getenv('SYMCTS')),'w') as f:
             f.write("No Title\n")
             f.write(self.gen_global_include())
             f.write(self.gen_options())
@@ -109,14 +113,15 @@ class genLut():
             f.write(self.gen_circuits())
             f.write(self.gen_datablock())
             f.write(self.gen_measure())
+            f.write(self.gen_end())
 
 def gen_spice():
 
-    with open("buffer.json",'r') as f:
+    with open("{}/utils/buffer.json".format(os.getenv('SYMCTS')),'r') as f:
         a_dict = json.loads(f.read())
         buffer_lib_size = a_dict["buffer_num"]
     for buffer_index in range(buffer_lib_size):
-        buffer_spice_file = "../library/spice/buf{}.subckt".format(buffer_index)
+        buffer_spice_file = "{}/library/spice/buf{}.subckt".format(os.getenv('SYMCTS'),buffer_index)
         lut = genLut(buffer_spice_file,buffer_index)
         lut.read_settings()
         lut.write_spice()

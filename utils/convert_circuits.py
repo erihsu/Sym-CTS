@@ -1,5 +1,6 @@
 import math
 import random
+import os
 class convertion():
 
     def __init__(self):
@@ -30,9 +31,9 @@ class convertion():
                 break
         self.num_pseudo_sinks = self.num_sinks - self.num_real_sinks
 
-    def readOriginFile(self, file_path="../circuits/ex_ispd/ispd09f11_small"):
+    def readOriginFile(self):
 
-        with open(file_path,'r') as f:
+        with open("{}/circuits/ex_ispd/ispd09f11_small".format(os.getenv('SYMCTS')),'r') as f:
             area = f.readline()
             self.head.append(area)
 
@@ -79,8 +80,8 @@ class convertion():
                 else:
                     self.lines.append(line)
 
-    def export_with_pseudo(self,filename="../evaluation/input/ispd09f11"):
-        with open(filename,'w') as f:
+    def export_with_pseudo(self):
+        with open("{}/evaluation/input/ispd09f11".format(os.getenv('SYMCTS')),'w') as f:
             for i,line in enumerate(self.head):
                 if i < 2:
                     f.write(line)
