@@ -2,5 +2,7 @@
 .DS_Store
 workspace/
 __pycache__/
+input/
+output/
 clockpath.txt
 solution.txt
