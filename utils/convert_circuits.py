@@ -1,6 +1,8 @@
 import math
 import random
+import json
 import os
+
 class convertion():
 
     def __init__(self):
@@ -14,6 +16,15 @@ class convertion():
         self.minY = 0
         self.maxX = 0
         self.maxY = 0
+        self.sink_cap = 0
+        self.load_sink_cap()
+
+    def load_sink_cap(self):
+
+        with open("{}/utils/settings.json".format(os.getenv('SYMCTS')),'r') as f:
+            a_dict = json.loads(f.read())
+            self.sink_cap = a_dict["library"]["sink_cap"]
+        
 
     def bnpPre(self):
         bnp_pre = []
@@ -71,7 +82,7 @@ class convertion():
             for i in range(self.num_pseudo_sinks):
                 x = random.randint(self.minX,self.maxX)
                 y = random.randint(self.minY,self.maxY)
-                self.sinks.append("{} {} {} 35\n".format(start_label+i,x,y))
+                self.sinks.append("{} {} {} {}\n".format(start_label+i,x,y,self.sink_cap))
 
             while True:
                 line = f.readline()

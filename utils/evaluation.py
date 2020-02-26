@@ -6,6 +6,8 @@
 
 import os
 import json
+import time
+
 import numpy as np
 
 class evaluation:
@@ -27,6 +29,7 @@ class evaluation:
         self.space_unit = "um"
         self.sim_length = 100000
         self.sim_precision = 10
+        self.logname = "eval"
 
     def read_settings(self):
         with open('{}/utils/settings.json'.format(os.getenv('SYMCTS')),'r') as f:
@@ -48,7 +51,7 @@ class evaluation:
 
     def gen_common(self):
         output_str = "*simple title\n" + \
-                     ".include \"45nm_LP.pm\"\n" +\
+                     ".lib \"./smic40/l0040ll_v1p4_1r.lib\" mos_mc\n" +\
                      ".include \"result.spice\"\n" +\
                      ".param S_Voltage={}v\n".format(self.voltage) +\
                      ".param SLEW_I={}{}\n".format(self.input_slew,self.time_unit) +\
@@ -66,7 +69,7 @@ class evaluation:
         return output_str
     
     def gen_stage2_tran(self):
-        output_str = ".tran {}{} {}{} MONTE={}\n".format(self.sim_precision,self.time_unit,self.sim_length,self.time_unit,self.mc_times)
+        output_str = ".tran {}{} {}{} SWEEP MONTE={}\n".format(self.sim_precision,self.time_unit,self.sim_length,self.time_unit,self.mc_times)
         return output_str
 
     def gen_stage1_measure(self):
@@ -112,7 +115,7 @@ class evaluation:
         return output_str
 
     def generate_stage1_control_file(self):
-        with open("{}/workspace/sim_control.sp".format(os.getenv('SYMCTS')),'w') as f:
+        with open("{}/workspace/{}.sp".format(os.getenv('SYMCTS'),self.logname),'w') as f:
             f.write(self.gen_common())
             f.write(self.gen_source())
             f.write(self.gen_stage1_tran())
@@ -120,26 +123,27 @@ class evaluation:
             f.write(self.gen_end())
 
     def launch_simulator(self):
-        os.system("hspice sim_control.sp")
+        os.system("hspice {}.sp".format(self.logname))
     
     def parse_from_mt(self):
         delay_num = len(self.sinks)
         slew_num = len(self.nodes)
-        with open("{}/workspace/sim_control.mt0.csv".format(os.getenv('SYMCTS')),'r') as f:
+        with open("{}/workspace/{}.mt0.csv".format(os.getenv('SYMCTS'),self.logname),'r') as f:
             delay_and_slew = np.genfromtxt(f,delimiter=',',skip_header=4)
+        
+        delays = delay_and_slew[:delay_num]
+        slews = delay_and_slew[delay_num:delay_num+slew_num]
         
         if np.isnan(np.min(delay_and_slew)):
             print("some nodes may be floating,please check netlist")
             exit(1)
         else:        
-            delays = delay_and_slew[:delay_num]
-            slews = delay_and_slew[delay_num:delay_num+slew_num]
             self.max_path = np.argmax(delays)
             self.min_path = np.argmin(delays)
             self.max_slew_node = np.argmax(slews)
         
     def generate_stage2_control_file(self):
-        with open("{}/workspace/sim_control.sp".format(os.getenv('SYMCTS')),'w') as f:
+        with open("{}/workspace/{}.sp".format(os.getenv('SYMCTS'),self.logname),'w') as f:
             f.write(self.gen_common())
             f.write(self.gen_source())
             f.write(self.gen_stage2_tran())
@@ -149,16 +153,32 @@ class evaluation:
 
 
     def get_statistics(self):
+        stamp = 49 # "Bootstrap" string in 49th row
+        skew = 0 
+        skew_std = 0
+        max_slew = 0
+        max_slew_std = 0
+        
+        with open("{}.mpp0".format(self.logname),"r") as f:
+            
+            for i,line in enumerate(f):
+                if i == stamp + 3:
+                    max_slew = float(line.split()[1])
+                    max_slew_std = float(line.split()[3])
+                elif i == stamp + 7:
+                    skew = float(line.split()[1])
+                    skew_std = float(line.split()[3])
 
-        skew = np.loadtxt("skew.log",dtype=float,usecols=2)
-        # slew = np.loadtxt("max_slew.log",dtype=float,usecols=2)
-        sskew = [np.mean(skew).astype(np.float32),np.std(skew).astype(np.float32)]
-        # sslew = [np.mean(slew).astype(np.float32),np.std(slew).astype(np.float32)]
-        return sskew
+        print("         nominal(ps)   stdDev(ps)")
+        print("skew     {}            {}".format(skew*1e12,skew_std*1e12))
+        print("max_slew {}            {}".format(max_slew*1e12,max_slew_std*1e12))
+    
+    def clean(self):
+        os.system("rm -f {}.*".format(self.logname))
         
 
-
 def main():
+    start = time.time()
     u = evaluation()
     u.read_settings()
     u.generate_stage1_control_file()
@@ -167,6 +187,8 @@ def main():
     u.generate_stage2_control_file()
     u.launch_simulator()
     u.get_statistics()
+    u.clean()
+    print("evaluation time used:{} min".format((time.time()-start)/60))
 
 
 if __name__ == "__main__":
