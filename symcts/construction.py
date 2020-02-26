@@ -106,7 +106,7 @@ class topology():
                 self.candidates.append([candidate_buffer])
 
                 # link root to sourcenode at (0,0)
-                self.wires.append(wire(Point(0,0),root))
+                self.wires.append(wire(Point(0,0),new_root))
  
 
 
@@ -144,7 +144,7 @@ class topology():
 
     def construct(self):
         self.hieraMerge()
-        print(self.computeTotalWL())
+        print("Total wirelength: {}um".format(self.computeTotalWL()/1000))
         self.gen_clockpath()
 
     def candidateBuffer(self,insert_point):
