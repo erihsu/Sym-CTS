@@ -1,0 +1,30 @@
+.subckt buf7 in out vdd
+XI0_XXNA1 ny in 0 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI0_XXNA1_2 0 in ny 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI0_XXNA1_3 ny in 0 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI1_XXNA1 0 ny out 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI1_XXNA1_2 out ny 0 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI1_XXNA1_3 0 ny out 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI1_XXNA1_4 out ny 0 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI1_XXNA1_5 0 ny out 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI1_XXNA1_6 out ny 0 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI1_XXNA1_7 0 ny out 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI1_XXNA1_8 out ny 0 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI1_XXNA1_9 0 ny out 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI1_XXNA1_10 out ny 0 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI1_XXNA1_11 0 ny out 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
+XI0_XXPA1 ny in vdd vdd plvt11ll_ckt w=4e-07 l=4e-08
+XI0_XXPA1_2 vdd in ny vdd plvt11ll_ckt w=4e-07 l=4e-08
+XI0_XXPA1_3 ny in vdd vdd plvt11ll_ckt w=4e-07 l=4e-08
+XI1_XXPA1 vdd ny out vdd plvt11ll_ckt w=4e-07 l=4e-08
+XI1_XXPA1_2 out ny vdd vdd plvt11ll_ckt w=4e-07 l=4e-08
+XI1_XXPA1_3 vdd ny out vdd plvt11ll_ckt w=4e-07 l=4e-08
+XI1_XXPA1_4 out ny vdd vdd plvt11ll_ckt w=4e-07 l=4e-08
+XI1_XXPA1_5 vdd ny out vdd plvt11ll_ckt w=4e-07 l=4e-08
+XI1_XXPA1_6 out ny vdd vdd plvt11ll_ckt w=4e-07 l=4e-08
+XI1_XXPA1_7 vdd ny out vdd plvt11ll_ckt w=4e-07 l=4e-08
+XI1_XXPA1_8 out ny vdd vdd plvt11ll_ckt w=4e-07 l=4e-08
+XI1_XXPA1_9 vdd ny out vdd plvt11ll_ckt w=4e-07 l=4e-08
+XI1_XXPA1_10 out ny vdd vdd plvt11ll_ckt w=4e-07 l=4e-08
+XI1_XXPA1_11 vdd ny out vdd plvt11ll_ckt w=4e-07 l=4e-08
+.ends buf7
