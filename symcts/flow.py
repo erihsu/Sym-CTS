@@ -13,11 +13,10 @@ cts.loadSinks(division.sinks,division.num_branchs)
 cts.construct()
 print(str(cts.num_branchs))
 # Step 2: buffer sizing with GA
-buffer_lib = [0,1,2,3,4]
 branch_level = len(cts.num_branchs) 
-buffer_lib_size = len(buffer_lib)
+buffer_lib_size = 9
 
-geneticAlgorithm(buffer_lib_size=buffer_lib_size ,branch_level=branch_level ,popSize=30, eliteSize=5, mutationRate=0.1, generations=20)
+geneticAlgorithm(buffer_lib_size=buffer_lib_size ,branch_level=branch_level ,popSize=300, eliteSize=30, mutationRate=0.15, generations=100)
 cts.buffering()
 
 # Step 3: export netlist of clock tree
