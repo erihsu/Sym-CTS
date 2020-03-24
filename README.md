@@ -26,7 +26,7 @@ The project is currently based on Python3.7.
 * **Hspice-2016**
 
 ### Flow it
-The whole workflow is compeleted by Makefile. Before ```make```,make sure ```SYMCTS``` environment variable in the current user. Export ```SYMCTS``` in your shell.
+The whole workflow is compeleted by Makefile(TBD). Before ```make```,make sure ```SYMCTS``` environment variable in the current user. Export ```SYMCTS``` in your shell.
 
 
 ```
