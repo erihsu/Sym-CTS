@@ -1,11 +1,43 @@
 {
-    "buffer_num":5,
+    "buffer_num":9,
     "buffers":{
-            "buf0":[2,1.37], 
-            "buf1":[4,2.74],
-            "buf2":[8,5.48],
-            "buf3":[16,10.96],
-            "buf4":[32,21.92]
+        "buf0":{
+            "name":"BUF_X2M_A9TL40",
+            "input_cap":0.757644
+        }, 
+        "buf1":{
+            "name":"BUF_X3M_A9TL40",
+            "input_cap":0.885091
+        },
+        "buf2":{
+            "name":"BUF_X4M_A9TL40",
+            "input_cap":1.288130
+        },
+        "buf3":{
+            "name":"BUF_X5M_A9TL40",
+            "input_cap":1.455490
+        },
+        "buf4":{
+            "name":"BUF_X6M_A9TL40",
+            "input_cap":1.590700
+        },
+        "buf5":{
+            "name":"BUF_X7P5M_A9TL40",
+            "input_cap":1.949730
+        },
+        "buf6":{
+            "name":"BUF_X9M_A9TL40",
+            "input_cap":2.310470
+        },
+        "buf7":{
+            "name":"BUF_X11M_A9TL40",
+            "input_cap":2.532740
+        },
+        "buf8":{
+            "name":"BUF_X16M_A9TL40",
+            "input_cap":3.788340
+        }
     },
-    "length":"45n"
+    "vendor":"smic",
+    "tech":"40LL LVT"    
 }
