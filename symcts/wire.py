@@ -118,6 +118,19 @@ class Snake_wire(Man_wire):
             self.__wires.append(wire(self.__points[0],self.endpoint))
             print("given length {} is not considerate compared with {}".format(length,min_length))
 
+    
+    def no_snaking(self):
+
+        vec = self.end - self.start
+        image_sign = np.sign(vec.imag)
+        index = int(-1/2*image_sign + 1/2)
+
+        self.__points.append(G_Point(self.turning[index].location))
+
+        self.__wires.append(wire(self.startpoint,self.__points[0]))
+        self.__wires.append(wire(self.__points[0],self.endpoint))
+
+
     def getPoints(self):
         return self.__points 
 
