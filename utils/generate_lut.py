@@ -164,12 +164,13 @@ class genLut():
                     f.write(str(nominal_delay[i,j])+" "+str(std_delay[i,j])+" "+str(nominal_slew[i,j])+" "+str(std_slew[i,j])+" "+str(slew)+" "+str(cap)+"\n")
             
 
-def gen_spice():
+def gen_spice(i):
 
-    lut = genLut("buf4.subckt",4)
+    lut = genLut("buf{}.subckt".format(i),i)
     lut.read_settings()
     lut.gen_lut()
 
 if __name__ == "__main__":
-    gen_spice()
+    for i in range(9):
+        gen_spice(i)
         

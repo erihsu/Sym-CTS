@@ -44,7 +44,7 @@ class convertion():
 
     def readOriginFile(self):
 
-        with open("{}/circuits/ex_ispd/ispd09f11_small".format(os.getenv('SYMCTS')),'r') as f:
+        with open("{}/circuits/ex_ispd/lcd_vga".format(os.getenv('SYMCTS')),'r') as f:
             area = f.readline()
             self.head.append(area)
 
@@ -92,7 +92,7 @@ class convertion():
                     self.lines.append(line)
 
     def export_with_pseudo(self):
-        with open("{}/evaluation/input/ispd09f11".format(os.getenv('SYMCTS')),'w') as f:
+        with open("{}/evaluation/input/lcd_vga".format(os.getenv('SYMCTS')),'w') as f:
             for i,line in enumerate(self.head):
                 if i < 2:
                     f.write(line)

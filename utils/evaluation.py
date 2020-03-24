@@ -133,14 +133,14 @@ class evaluation:
         
         delays = delay_and_slew[:delay_num]
         slews = delay_and_slew[delay_num:delay_num+slew_num]
+
+        # fill nan with 0
+        slews[np.isnan(slews)] = 0
         
-        if np.isnan(np.min(delay_and_slew)):
-            print("some nodes may be floating,please check netlist")
-            exit(1)
-        else:        
-            self.max_path = np.argmax(delays)
-            self.min_path = np.argmin(delays)
-            self.max_slew_node = np.argmax(slews)
+
+        self.max_path = np.argmax(delays) + 1
+        self.min_path = np.argmin(delays) + 1
+        self.max_slew_node = np.argmax(slews) + 1
         
     def generate_stage2_control_file(self):
         with open("{}/workspace/{}.sp".format(os.getenv('SYMCTS'),self.logname),'w') as f:
