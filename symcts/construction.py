@@ -26,10 +26,8 @@ class topology():
 
     def computeTotalWL(self):
         total_wirelength = 0
-        wire_num = 1
-        for i in range(len(self.num_branchs)):
-            wire_num *= self.num_branchs[i]
-            total_wirelength += wire_num*self.wirelength[i]
+        for a_wire in self.wires:
+            total_wirelength += a_wire.getLength()
         return total_wirelength
 
 
@@ -172,7 +170,11 @@ class topology():
             for a_candidate in candidate:
                 startpoint = a_candidate.startpoint
                 endpoint   = a_candidate.endpoint
-                self.buffers.append(clk_buffer(startpoint,endpoint,buffer_type[i]))
+                # considering non-buffering branch
+                if buffer_type[i] == 0:
+                    self.wires.append(a_candidate.changeToWire())
+                else:
+                    self.buffers.append(clk_buffer(startpoint,endpoint,buffer_type[i]-1))
                 
     def exportNetlist(self):
         # # #
