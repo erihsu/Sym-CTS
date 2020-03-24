@@ -30,8 +30,6 @@ class Fitness:
 
 		with open('{}/utils/settings.json'.format(os.getenv('SYMCTS')),'r') as f:
 			a_dict = json.loads(f.read())
-			self.a     = a_dict['symcts']['a']
-			self.b     = a_dict['symcts']['b']
 			self.Slin  = a_dict['symcts']['Slin']
 
 		self.rho_matrix = np.load('{}/utils/rho_matrix.npy'.format(os.getenv('SYMCTS')))
