@@ -22,17 +22,16 @@ class partition():
                     n /= i
                     self.num_branchs.append(i)
                     break
-        # self.num_branchs.reverse()
 
     def readSinks(self):
 
-        with open("{}/circuits/ex_ispd/ispd09f11_small".format(os.getenv('SYMCTS')),'r') as f:       
+        with open("{}/circuits/ex_ispd/lcd_vga".format(os.getenv('SYMCTS')),'r') as f:       
             # skip first and second Line
             f.readline()
             f.readline()
             self.num_real_sinks = int(f.readline().split(" ")[2])
             
-        with open("{}/evaluation/input/ispd09f11".format(os.getenv('SYMCTS')),'r') as f:
+        with open("{}/evaluation/input/lcd_vga".format(os.getenv('SYMCTS')),'r') as f:
 
             # skip first and second Line
             f.readline()

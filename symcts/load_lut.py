@@ -10,36 +10,50 @@ import os
 import json
 
 def readindex():
-	# read input_slew and capacitance_load index from indices.txt
+
 	with open("{}/utils/settings.json".format(os.getenv('SYMCTS')),'r') as f:
 		a_dict = json.loads(f.read())
 		input_slew = a_dict["library"]["input_slew"]
 		output_load = a_dict["library"]["output_load"]
 	return input_slew, output_load
 
-def readlut(bufsize,filepath,option='rise'):
-	# assume lut keep 7x7 shape
-	delay_lut = np.zeros((7,7,2,bufsize))
-	slew_lut  = np.zeros((7,7,2,bufsize))
-	power_lut = np.zeros((7,7,bufsize))
+def readlut(filepath):
+
+	bufsize = 0
+
+	with open("{}/utils/settings.json".format(os.getenv('SYMCTS')),'r') as f:
+		a_dict = json.loads(f.read())
+		lib_size = a_dict["library"]["lib_size"]
+	
+	with open("{}/utils/buffer.json".format(os.getenv('SYMCTS')),'r') as f:
+		a_dict = json.loads(f.read())
+		bufsize = a_dict["buffer_num"]
+
+	delay_lut = np.zeros((lib_size[0],lib_size[1],2,bufsize))
+	slew_lut  = np.zeros((lib_size[0],lib_size[1],2,bufsize))
 	for s in range(bufsize):
-		with open("{}/X{}/lut_{}.txt".format(filepath,s+1,option),'r') as f:
+		with open("{}/X{}/lut.txt".format(filepath,s),'r') as f:
 			# skip first line
 			f.readline()
 			# input_slew sweep loop
-			for i in range(7):
+			for i in range(lib_size[0]):
 				# output_cap sweep loop 
-				for j in range(7):
-					data = f.readline().split(" ")
+				for j in range(lib_size[1]):
+					data = f.readline().strip().split(" ")
 					delay_lut[i,j,0,s] = float(data[0])*1e12 # mean value of delay, convert to ps
 					delay_lut[i,j,1,s] = float(data[1])*1e12 # standard deviation of delay, convert to ps
 					slew_lut[i,j,0,s]  = float(data[2])*1e12 # mean value of output slew, convert to ps
 					slew_lut[i,j,1,s]  = float(data[3])*1e12 # standard deviation of output slew, convert to ps
-					power_lut[i,j,s]   = float(data[4])*1e12 # power dissipation, convert to ps
-	return delay_lut,slew_lut,power_lut
+	return delay_lut,slew_lut
 
-def init_Lut(lut,x,y,bufsize):
+def init_Lut(lut,x,y):
+	bufsize = 0
 	model = []
+
+	with open("{}/utils/buffer.json".format(os.getenv('SYMCTS')),'r') as f:
+		a_dict = json.loads(f.read())
+		bufsize = a_dict["buffer_num"]
+
 	for s in range(bufsize):
 		# lut model for a specific size
 		# using cubic interpolate 
@@ -48,33 +62,30 @@ def init_Lut(lut,x,y,bufsize):
 	return model
 
 
-def load_lut(bufsize,filepath="{}/library/lib".format(os.getenv('SYMCTS'))):
+def load_lut(filepath="{}/library/lib".format(os.getenv('SYMCTS'))):
 	if not os.path.exists(filepath):
 		print("file path not exist !")
+		exit(1)
 	else:
-		DLut_r,SLut_r,PLut_r = readlut(bufsize,filepath,'rise')
-		DLut_f,SLut_f,PLut_f = readlut(bufsize,filepath,'fall')
+		DLut_r,SLut_r = readlut(filepath)
 	# delay lut.
-	DLut = [DLut_r[:,:,0,:],DLut_r[:,:,1,:],DLut_f[:,:,0,:],DLut_f[:,:,1,:]]
+	DLut = [DLut_r[:,:,0,:],DLut_r[:,:,1,:]]
 	# output slew lut
-	SLut = [SLut_r[:,:,0,:],SLut_r[:,:,1,:],SLut_f[:,:,0,:],SLut_f[:,:,1,:]]
-	# power dissipation lut
-	PLut = [PLut_r,PLut_f]
-	return DLut, SLut, PLut 
+	SLut = [SLut_r[:,:,0,:],SLut_r[:,:,1,:]]
+	return DLut, SLut 
 
-def initialize(bufsize):
+def initialize():
 	DModel = []
 	SModel = []
-	PModel = []
+
 	input_slew_index,output_cap_index = readindex()
-	Dlut,Slut,Plut = load_lut(bufsize)
+	Dlut,Slut = load_lut()
 	for lut in Dlut:
-		DModel.append(init_Lut(lut,input_slew_index,output_cap_index,bufsize))
+		DModel.append(init_Lut(lut,input_slew_index,output_cap_index))
 	for lut in Slut:
-		SModel.append(init_Lut(lut,input_slew_index,output_cap_index,bufsize))
-	for lut in Plut:
-		PModel.append(init_Lut(lut,input_slew_index,output_cap_index,bufsize))
-	return DModel,SModel,PModel
+		SModel.append(init_Lut(lut,input_slew_index,output_cap_index))
+
+	return DModel,SModel
 
 def main():
 	pass

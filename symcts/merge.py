@@ -9,10 +9,16 @@ def merge_two_points(points,seg_length):
 	end_point.set_gid(points[0].get_gid())
 	wire1 = Snake_wire(end_point,points[0])
 	wire2 = Snake_wire(end_point,points[1])
-	wire1.snaking(seg_length)
-	wire2.snaking(seg_length)
+
+	# wire1.snaking(seg_length)
+	# wire2.snaking(seg_length)
+
+	wire1.no_snaking()
+	wire2.no_snaking()
+
 	new_points = wire1.getPoints() + wire2.getPoints()
 	new_wires = wire1.getWires() + wire2.getWires()
+
 	return end_point,new_points,new_wires
 
 def merge_three_points(points,seg_length):
@@ -22,13 +28,18 @@ def merge_three_points(points,seg_length):
 	end_point_location = get_center_of_three(points[0].location,points[1].location,points[2].location)
 	end_point = M_Point(location=end_point_location)
 	end_point.set_gid(points[0].get_gid())
+
 	wire1 = Snake_wire(end_point,points[0])
 	wire2 = Snake_wire(end_point,points[1])
 	wire3 = Snake_wire(end_point,points[2])
 
-	wire1.snaking(seg_length)
-	wire2.snaking(seg_length)
-	wire3.snaking(seg_length)
+	# wire1.snaking(seg_length)
+	# wire2.snaking(seg_length)
+	# wire3.snaking(seg_length)
+	
+	wire1.no_snaking()
+	wire2.no_snaking()
+	wire3.no_snaking()
 
 	new_points = wire1.getPoints() + wire2.getPoints() + wire3.getPoints()
 	new_wires  = wire1.getWires() + wire2.getWires() + wire3.getWires()
@@ -57,7 +68,7 @@ def get_center_of_three(loca1,loca2,loca3):
 		loca_center = (loca1+loca2)/2
 	elif l2>l1 and l2>l3:
 		loca_center = (loca2+loca3)/2
-	elif l3>l1 and l3>l2:
+	else:
 		loca_center = (loca1+loca3)/2
 	return loca_center
 

@@ -8,8 +8,8 @@ from fitness import Fitness
 #创建一个缓冲器插入策略，一个插入策略对应一种染色体编码。染色体上的基因代表不同尺寸buffer的编号，0代表不差buffer，数字越大，buffer尺寸越大
 def createStrategy(buffer_lib_size,branch_level):
 	solution = []
-	for i in range(branch_level):
-		solution.append(random.randint(0, buffer_lib_size-1))
+	for _ in range(branch_level):
+		solution.append(random.randint(0, buffer_lib_size))
 	return solution
 
 # create first population (list of strategies)
@@ -17,7 +17,7 @@ def createStrategy(buffer_lib_size,branch_level):
 def initialPopulation(popSize, buffer_lib_size, branch_level):
 	population = []
 
-	for i in range(0, popSize):
+	for _ in range(0, popSize):
 		population.append(createStrategy(buffer_lib_size, branch_level))
 	return population
 
@@ -25,8 +25,9 @@ def initialPopulation(popSize, buffer_lib_size, branch_level):
 # 对种群内的个体按照适应度进行排序
 def rankStrategies(population):
 	fitnessResults = {}
+	u = Fitness()
 	for i in range(0, len(population)):
-		fitnessResults[i] = Fitness(population[i]).objFitness()
+		fitnessResults[i] = u.objFitness(population[i])
 	return sorted(fitnessResults.items(),key = operator.itemgetter(1), reverse = True)
 
 # selection function that will be used to make the list of parent strategies
