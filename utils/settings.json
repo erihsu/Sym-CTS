@@ -8,28 +8,22 @@
         },
     "library":{
         "voltage":0.55,
-        "lib_size":[5,5],
-        "input_slew_lower":2.1,
-        "input_slew_upper":1236,
-        "input_slew":[2.1,102.208,250.991,482.79,1236],
+        "lib_size":[7,7],
+        "input_slew_lower":10.5,
+        "input_slew_upper":2472.0,
+        "input_slew":[10.5,109.3,408.8,878.5,1448.0,2020.0,2472.0],
         "output_load_lower":0.1,
-        "output_load_upper":95.1025,
-        "output_load":[0.1,7.80035,19.2449,37.075,95.1025],
-        "sink_cap":0.607
+        "output_load_upper":95.10,
+        "output_load":[0.1,1.809,7.808,19.26,37.11,62.15,95.10]
         },
     "symcts":{
-        "buffer_lib_size":1,
-        "a":10000,
-        "b":1000,
-        "c0":0.5,
-        "rho_f":0.8,
-        "Slin":30
+        "Slin":1000
             },
     "evaluation":{
         "voltage":0.55,
         "mc_times":1000,
         "rise_or_fall":"fall",
-        "initial_input_slew":50
+        "initial_input_slew":1000
     }
 
 }
