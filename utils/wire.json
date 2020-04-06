@@ -1,11 +1,11 @@
 {
     "wire":{
         "unit_cap":{
-            "value":0.257,
+            "value":0.2,
             "unit":"fF/um"
         },
         "unit_res":{
-            "value":4,
+            "value":0.1,
             "unit":"Ohm/um"
         }
     }

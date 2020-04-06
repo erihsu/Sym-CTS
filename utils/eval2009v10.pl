@@ -36,12 +36,6 @@
 #   temp     deg celsius
 #   cap      fF
 
-
-######################################################################
-# Add-on:
-# extract.pl is mostly from original evaluation script. We remove some code from origin file.
-# If you want to use full function of ispd2009 evaluation,please download it from ispd2009 contest website
-######################################################################
 use Getopt::Std;
 use POSIX qw(ceil floor);
 
@@ -101,25 +95,22 @@ elsif($modelCardFile =~ /\.bz2$/) {
 # Process input file
 #
 open INFILE, "$inFile";
-#song: read one line
+
 $_ = <INFILE>;
-#song: match the first line 
 die "ERROR" unless(/^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*$/);
 $llx = $1; $lly = $2; $urx = $3; $ury = $4;
 
-#song: match the second line
 $ssCount = 0;
 $_ = <INFILE>;
 die "ERROR" unless(/^\s*source\s+(\S+)\s+(\d+)\s+(\d+)\s+(\S+)\s*$/);
 $id = $1; $x = $2; $y = $3; $srcBufId = $4;
-die "ERROR: 2 sinks have same sink id in $inFileO," if $ssExistInInputFile{$id}++; #song:the ssExistInInputFile is a hash table. if the value of key id is not zero, there would be same sink id
+die "ERROR: 2 sinks have same sink id in $inFileO," if $ssExistInInputFile{$id}++;
 push @ssIdArr, $id;
 push @ssXArr, $x;
 push @ssYArr, $y;
 push @ssCapArr, -1;
 $CountFromSsId{$id} = $ssCount++;
 
-#song: get sink datas
 $_ = <INFILE>;
 die "ERROR" unless(/^\s*num\s+sink\s+(\d+)\s*$/);
 $numSink= $1;
@@ -129,15 +120,13 @@ for $i (0 .. ($numSink - 1)) {
   $id = $1; $x = $2; $y = $3; $cap = $4; #id can be a string
   die "ERROR: 2 sinks have same sink id in $inFileO," if $ssExistInInputFile{$id}++;
   push @ssIdArr, $id;
-  push @ssXArr, $x/100;
-  push @ssYArr, $y/100;
+  push @ssXArr, $x;
+  push @ssYArr, $y;
   push @ssCapArr, $cap;
-  $CountFromSsId{$id} = $ssCount++; #song:  id 在列表中的位置
+  $CountFromSsId{$id} = $ssCount++;
   $sinkUncovered{$id} = 1;
 }
 
-
-#song: get wire lib data
 $_ = <INFILE>;
 die "ERROR" unless(/^\s*num\s+wirelib\s+(\d+)\s*$/);
 $numWireCode = $1;
@@ -153,7 +142,6 @@ for $i (0 .. ($numWireCode - 1)) {
   $CountFromWcId{$id} = $wcCount++;
 }
 
-#song: get buf lib data
 $_ = <INFILE>;
 die "ERROR" unless(/^\s*num\s+buflib\s+(\d+)\s*$/);
 $numBufLib = $1;
@@ -175,7 +163,6 @@ for $i (0 .. ($numBufLib - 1)) {
 }
 die "ERROR: buffer at source ($srcBufId) is not defined," unless $bufLibExistInInputFile{$srcBufId};
 
-#song: get voltage, slew and capacity limit
 $_ = <INFILE>;
 die "ERROR" unless(/^\s*simulation\s+vdd\s+(.+)\s*$/);
 @vArr= split /\s+/, $1;
@@ -200,7 +187,6 @@ for $i (0 .. ($numBlockage - 1)) {
   push @uryBlockArr, $4;
 }
 
-#song: output data
 debug_infile();
 close INFILE;
 
@@ -210,7 +196,6 @@ close INFILE;
 $nodeCount = 0;
 open RFILE, "$resultFile";
 
-#song: read soure and node data
 $_ = <RFILE>;
 die "ERROR" unless(/^\s*sourcenode\s+(\S+)\s+(\S+)\s*$/);
 $id= $1; $srcId = $2;
@@ -243,8 +228,8 @@ for $i (0 .. ($numSinkNode - 1)) {
   $_ = <RFILE>;
   die "ERROR" unless(/^\s*(\S+)\s+(\S+)\s*$/);
   $id = $1; $sinkId = $2; #id can be a string
-  die "ERROR: 2 nodes have same node id in $resultFileO," if $nodeExistInResultFile{$id}++;     #song: 检查是否重复 
-  die "ERROR: sink id ($sinkId) not defined in $inFileO," unless $ssExistInInputFile{$sinkId};  #song: 检查是否在输入文件出现过，如果出现过hash表表项的值为1
+  die "ERROR: 2 nodes have same node id in $resultFileO," if $nodeExistInResultFile{$id}++;
+  die "ERROR: sink id ($sinkId) not defined in $inFileO," unless $ssExistInInputFile{$sinkId};
   push @nodeIdArr, $id;
   push @nodeSsIdArr, $sinkId;
   push @nodeXArr, -1; push @nodeYArr, -1; push @nodeMergedTo, "__none__"; push @totCap, 0; push @isInv, -1;
@@ -253,9 +238,9 @@ for $i (0 .. ($numSinkNode - 1)) {
   $sinkUncoveredByResult{$id} = 1;
 }
 
-die "ERROR clock net does not cover all sinks," if (keys %sinkUncovered);   #song:  检查输入网表寄存器是否全在网表里
+die "ERROR clock net does not cover all sinks," if (keys %sinkUncovered);
+
 # update x and y of source and sink
-# song: 更新位置信息
 for $i (0 .. ($#nodeIdArr )) {
     if ($nodeSsIdArr[$i] eq $ssIdArr[0]) { 
         $nodeXArr[$i] = $ssXArr[$CountFromSsId{$nodeSsIdArr[$i]}];
@@ -308,8 +293,6 @@ close RFILE;
 push @neighbor, ();
 push @bufNeighbor, ();
 push @invNeighbor, ();
-#song:  两重循环
-#song:  建立邻接表
 for $i (0 .. ($#nodeIdArr )) {
     push @{$neighbor[$i]}, ();
     for $j (0 .. ($#wireFromArr )) {
@@ -351,7 +334,7 @@ for $i (0 .. ($#nodeIdArr )) {
 for $i (0 .. ($#nodeIdArr )) {
     die "ERROR node $nodeIdArr[$i] is not connect to the clock network," if $isInv[$i] == -1;
     if ($nodeSsIdArr[$i] ne $ssIdArr[0] && $nodeSsIdArr[$i] ne "__internal__" ) { 
-      #  die "ERROR sinknode $nodeIdArr[$i] is inverted," if $isInv[$i] == 1;
+        die "ERROR sinknode $nodeIdArr[$i] is inverted," if $isInv[$i] == 1;
     }
 }
 
@@ -382,8 +365,6 @@ debug_neighbor();
 ###############################################################################
 # segmentation of long interconnect, create extra nodes
 #
-#song:  分割长连线
-#song:  遍历连线数组
 for $j (0 .. ($#wireFromArr )) {
     last if ( $opt_S );
     $from = $wireFromArr[$j];
@@ -391,13 +372,10 @@ for $j (0 .. ($#wireFromArr )) {
     $wc = $wireWcArr[$j];
     $countFrom = $CountFromNodeId{$from};
     $countTo = $CountFromNodeId{$to};
-    #song:  如果长度为零就跳出本次循环
     next if ( $nodeXArr[$countFrom] == $nodeXArr[$countTo] && $nodeYArr[$countFrom] == $nodeYArr[$countTo] );
     $xDist = abs($nodeXArr[$countFrom] - $nodeXArr[$countTo]);
     $yDist = abs($nodeYArr[$countFrom] - $nodeYArr[$countTo]);
-    #song:  不是长连线的话就跳出本次循环
     next if ($xDist + $yDist) <= $MAX_WIRE_LENGTH;
-    #song:  分多少段
     $numSeg = ceil( ($xDist + $yDist)/ $MAX_WIRE_LENGTH );
     $xSegLen = ceil( $xDist / $numSeg );
     $ySegLen = ceil( $yDist / $numSeg );
@@ -409,7 +387,7 @@ for $j (0 .. ($#wireFromArr )) {
     $xInc = 0 if $xDist < 1;
     $yInc = 0 if $yDist < 1;
     $newX = $nodeXArr[$countFrom]; $newY = $nodeYArr[$countFrom];
-    $wireWcArr[$j] = "__segmented__";   #song:  标示为被划分的线
+    $wireWcArr[$j] = "__segmented__";
     die "ERROR script internal bug," if $isInv[$countTo] != $isInv[$countFrom];
     $segIsInv = $isInv[$countFrom];
     ########
@@ -432,7 +410,6 @@ for $j (0 .. ($#wireFromArr )) {
     push @wireWcArr, $wc;
 }
 
-#song： 提取寄生参数
 ###############################################################################
 # Calculate distributed R and C
 #
@@ -477,6 +454,7 @@ for $j (0 .. ($#bufFromArr )) {
 }
 $totBufCap = $resultTotCap - $totWireCap - $totSinkCap;
 
+
 ###############################################################################
 ###############################################################################
 #
@@ -485,8 +463,7 @@ $totBufCap = $resultTotCap - $totWireCap - $totSinkCap;
 ###############################################################################
 ###############################################################################
 
-@srcTrans4Test = ( "1" ); # 0 = rising, 1 = falling
-# @srcTrans4Test = ( "0", "1" ); # 0 = rising, 1 = falling
+@srcTrans4Test = ( "0", "1" ); # 0 = rising, 1 = falling
 $firstTime = 1;
 $minLatency = 100000;
 $maxLatency = 0;
@@ -505,8 +482,9 @@ $sourceEndVolt = (1-$srcTrans)*$vdd;
 ###############################################################################
 # Write spice files
 #
-#song:  写出spice文件
-open OUTFILE, "> $resultFile\.spice";
+open OUTFILE, "> v$vdd\_t$srcTrans\_$resultFile\.spice";
+print OUTFILE "* spice from $resultFileO\n";
+print OUTFILE ".include $modelCardFileO\n";
 for $i (0 .. ($#bufLibIdArr )) {
     open SUBCKTFILE, "$bufLibSubcktArr[$i]" or die $!;
     while (<SUBCKTFILE>){
@@ -518,14 +496,12 @@ for $i (0 .. ($#bufLibIdArr )) {
     }
     close SUBCKTFILE;
 }
-#song:  写出电容部分
 $capCount=$resCount=$bufCount=0;
 for $i (0 .. ($#nodeIdArr )) {
     next if $nodeMergedTo[$i] ne "__none__";
     print OUTFILE "c$capCount n$nodeIdArr[$i] 0 $totCap[$i]f\n";
     $capCount++;
 }
-#song:  写出电阻部分
 for $j (0 .. ($#wireFromArr )) {
     next if $wireWcArr[$j] eq "__segmented__";
     $from = $wireFromArr[$j];
@@ -540,7 +516,6 @@ for $j (0 .. ($#wireFromArr )) {
     print OUTFILE "r$resCount n$from n$to $fullRes\n";
     $resCount++;
 }
-#song:  写出buf部分
 for $i (0 .. ($#nodeIdArr )) {
     if ($nodeSsIdArr[$i] eq $ssIdArr[0]) { 
         $i = $nodeMergedTo[$i] if $nodeMergedTo[$i] ne "__none__";
@@ -577,10 +552,153 @@ for $i (0 .. ($#nodeIdArr )) {
         }
     }
 }
+
+print OUTFILE "*
+vdd vdd 0 $vdd
+vdt gin 0 $vdd pwl(0n $sourceInitVolt, 0.2n $sourceInitVolt, 0.325n $sourceEndVolt, 3.0n $sourceEndVolt)
+*
+.ic v(gin)=$sourceInitVolt
+";
+
+for $i (0 .. ($#nodeIdArr )) {
+    next if $nodeMergedTo[$i] ne "__none__";
+    $nodeVolt = $sourceInitVolt;
+    $nodeVolt = $sourceEndVolt if $isInv[$i];
+    print OUTFILE ".ic v(n$nodeIdArr[$i])=$nodeVolt\n";
+}
+print OUTFILE "*
+.opti nopage temp=75
+.width out=240
+*
+.tran 0.01n 3.0n 0.0n 0.01n
+";
+print OUTFILE "* .print tran v(gin)";
+foreach $id (@monitorTheseNodes){
+    print OUTFILE " v(n$id)";
+}
+print OUTFILE "\n.print tran all";
+print OUTFILE "\n* plot v(gin)";
+foreach $id (@monitorTheseNodes){
+    print OUTFILE " v(n$id)";
+}
+print OUTFILE "\n.end\n";
 close OUTFILE;
 $firstTime = 0;
+
+system("ngspice -b v$vdd\_t$srcTrans\_$resultFile\.spice > v$vdd\_t$srcTrans\_$resultFile\.wave 2> /dev/null ");
+
+###############################################################################
+# run simulation results
+#
+open INFILE, "v$vdd\_t$srcTrans\_$resultFile\.wave";
+# read the file (and scale time to ps while doing it)
+undef @data;
+undef %labelInWave;
+$numDataSet = 0;
+while(<INFILE>){
+    # if ( /Transient Analysis/ ){
+    #     $numDataSetPrev = $numDataSet - 2;
+    #     $start = 1;
+    # }
+    if ( /^Index / ){
+        $numDataSetPrev = $numDataSet;
+        @line = split;
+        $numUsefulData=0;
+        undef @kArr;
+        for ($k=2;$k<$#line+1;$k++) {
+            die if $labelInWave{$line[$k]}++;
+            $label = $line[$k];
+            $label =~ s/^n//;
+            next unless $nodeIsBeingMonitored{$label} or $sinkIsBeingMonitored{$label} or $label eq "gin";
+            push @kArr, $k;
+            $label[$numDataSetPrev+$numUsefulData] = $line[$k];
+            $label2Cnt[$line[$k]] = $numDataSetPrev+$numUsefulData;
+            $numUsefulData++;
+        }
+        $start = 1;
+        next;
+    }
+    next if $start == 0;
+    @line = split;
+    if ($line[0]=~ /^-?\d/ && $line[0] > 0) {
+        $numDataSet = $numUsefulData + $numDataSetPrev;
+        $idx = $line[0];
+        $time[$idx]=$line[1]*1e12;
+        $ii=0;
+        foreach $k (@kArr){
+            $data[$numDataSetPrev+$ii][$idx] = $line[$k];
+            $ii++;
+        }
+    } 
+}
+close INFILE;
+
+#DEBUG# #DEBUG# #DEBUG# #DEBUG#
+#
+if ( 0 ) {
+    for ($k=0; $k<$numDataSet; $k++) {
+        print "$k ($label[$k])";
+        for ($j=0; $j<$idx; $j++) {
+            print "$data[$k][$j] ";
+        }
+        print "\n";
+    }
+}
+#
+#DEBUG# #DEBUG# #DEBUG# #DEBUG#
+
+die if $label[0] ne "gin";
+
+$monitorTheseNodesCount=0;
+$localMinLatency = 100000;
+$localMaxLatency = 0;
+for ($k=1; $k<$numDataSet; $k++) {
+    $label = $label[$k];
+    $label =~ s/^n//;
+    next unless $nodeIsBeingMonitored{$label} or $sinkIsBeingMonitored{$label};
+    #DEBUG# print "$label\n";
+    $vmid = $vdd/2.0; $v10 = $vdd*0.1; $v90 = $vdd*0.9;
+    $d50[$k]=-1; $d10[$k]=-1; $d90[$k]=-1;
+    for ($j=0,$i=1; $i<$idx; $i++,$j++) {
+        $v1 = $data[$k][$i]-$vmid; $v2 = $data[$k][$j]-$vmid;
+        $d50[$k] = $time[$j]-$v2*($time[$i]-$time[$j])/($v1-$v2) if ($v1*$v2 <= 0.0);
+        $v1 = $data[$k][$i]-$v10; $v2 = $data[$k][$j]-$v10;
+        $d10[$k] = $time[$j]-$v2*($time[$i]-$time[$j])/($v1-$v2) if ($v1*$v2 <= 0.0);
+        $v1 = $data[$k][$i]-$v90; $v2 = $data[$k][$j]-$v90;
+        $d90[$k] = $time[$j]-$v2*($time[$i]-$time[$j])/($v1-$v2) if ($v1*$v2 <= 0.0);
+    }
+    print "ERROR cannot find 10% delay at $label.\n" if $d10[$k]<0;
+    print "ERROR cannot find 50% delay at $label.\n" if $d50[$k]<0;
+    print "ERROR cannot find 90% delay at $label.\n" if $d90[$k]<0;
+    if ( $d90[$k] > $d10[$k] ) {
+        $slew[$k] = $d90[$k] - $d10[$k];
+    } else {
+        $slew[$k] = $d10[$k] - $d90[$k];
+    }
+    if ( $opt_s ){
+        print "ERROR slew violation $slew[$k] at $label.\n" if $slew[$k] > $SLEWLIMIT;
+    } else {
+        die "ERROR slew violation $slew[$k] at $label," if $slew[$k] > $SLEWLIMIT;
+    }
+    if ( $sinkIsBeingMonitored{$label} ) {
+        printf ("    sink %s (%s) latency %.3f slew %.3f\n", $label,$nodeSsIdArr[$CountFromNodeId{$label}],$d50[$k]-$d50[0],$slew[$k]) if ( $opt_v > 0 );
+        $maxLatency = $d50[$k]-$d50[0] if $d50[$k]-$d50[0] > $maxLatency;
+        $minLatency = $d50[$k]-$d50[0] if $d50[$k]-$d50[0] < $minLatency;
+        $localMaxLatency = $d50[$k]-$d50[0] if $d50[$k]-$d50[0] > $localMaxLatency;
+        $localMinLatency = $d50[$k]-$d50[0] if $d50[$k]-$d50[0] < $localMinLatency;
+    }
+    $monitorTheseNodesCount++;
+}
+printf ("    nominal skew %.3f (ps)\n", $localMaxLatency-$localMinLatency ) if ( $opt_v > 0 );
+$maxNominalSkew = $localMaxLatency-$localMinLatency if $maxNominalSkew < $localMaxLatency-$localMinLatency;
 } # END of foreach $srcTrans (@srcTrans4Test)
 } # END of foreach $vdd (@vArr)
+
+print "ERROR cap violation $resultTotCap > $CAPLIMIT \n" if $resultTotCap > $CAPLIMIT;
+# printf ("%s %s CLR %.3f (ps) C %.3f (s %.3f b %.3f w %.3f)(fF) nontree? %d maxNominalSkew %.3f\n",$inFileO, $resultFileO, $maxLatency-$minLatency, $resultTotCap, $totSinkCap, $totBufCap, $totWireCap, $NONTREE, $maxNominalSkew );
+printf ("%s %s CLR %.3f (ps) C %.3f (s %.3f b %.3f w %.3f)(fF) maxNominalSkew %.3f\n",$inFileO, $resultFileO, $maxLatency-$minLatency, $resultTotCap, $totSinkCap, $totBufCap, $totWireCap, $maxNominalSkew );
+
+
 ###############################################################################
 ###############################################################################
 # SUBROUTINE
@@ -671,7 +789,7 @@ sub merge_neighbor_node{
         }
     }
 }
-#song: 一些规则性的检查
+
 sub check_node_is_inverted{
     my $i = shift;
     my $thisIsInv = shift;

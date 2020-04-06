@@ -1,8 +1,0 @@
-.subckt buf0 in out vdd
-XI0_XXNA1 ny in 0 0 nlvt11ll_ckt w=1.8e-07 l=4e-08
-XI1_XXNA1 0 ny out 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
-XI1_XXNA1_2 out ny 0 0 nlvt11ll_ckt w=3.1e-07 l=4e-08
-XI0_XXPA1 ny in vdd vdd plvt11ll_ckt w=2.3e-07 l=4e-08
-XI1_XXPA1 vdd ny out vdd plvt11ll_ckt w=4e-07 l=4e-08
-XI1_XXPA1_2 out ny vdd vdd plvt11ll_ckt w=4e-07 l=4e-08
-.ends buf0

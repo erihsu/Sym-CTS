@@ -1,0 +1,4 @@
+.subckt inv0 in out vdd
+m1  out in  vdd vdd   pmos l=45n w=14.6u
+m2  out in  0   0     nmos l=45n w=10.0u 
+.ends inv0
