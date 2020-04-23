@@ -3,6 +3,7 @@ import load_lut as load
 import numpy as np
 import os
 import json
+import pdb
 
 class Fitness:
 	def __init__(self):
@@ -18,19 +19,21 @@ class Fitness:
 			a_dict = json.loads(f.read())
 			self.lib_size = a_dict['buffer_num']
 			for i in range(self.lib_size):
-				self.f1.append(a_dict['buffers']['buf{}'.format(i)]['input_cap'])
+				self.f1.append(a_dict['buffers']['buf{}'.format(i)]['input_cap']*1e-15) # convert to F
 
 		with open('{}/utils/sink.json'.format(os.getenv('SYMCTS')),'r') as f:
 			a_dict = json.loads(f.read())
-			self.sink_cap = a_dict['sink']['input_cap']
+			self.sink_cap = a_dict['sink']['input_cap']*1e-15 #convert to F/um
 
 		with open('{}/utils/wire.json'.format(os.getenv('SYMCTS')),'r') as f:
 			a_dict = json.loads(f.read())
-			self.c0 = a_dict['wire']['unit_cap']['value']
+			self.c0 = a_dict['wire']['unit_cap']['value']*1e-15 #convert to F/um
 
 		with open('{}/utils/settings.json'.format(os.getenv('SYMCTS')),'r') as f:
 			a_dict = json.loads(f.read())
-			self.Slin  = a_dict['symcts']['Slin']
+			self.Slin  = a_dict['symcts']['Slin']*1e-12 #convert to s
+			self.max_cap_limit = a_dict['library']['output_load_upper']*1e-15 #convert to F
+			self.slew_limit = a_dict['symcts']['slew_max']*1e-12 #convert to s
 
 		self.rho_matrix = np.load('{}/utils/rho_matrix.npy'.format(os.getenv('SYMCTS')))
 
@@ -74,7 +77,6 @@ class Fitness:
 		self.f32 = DModel[1]
 
 	def computeObj(self,strategy):
-
 		
 		raw_strategy = np.array([self.lib_size] + strategy) # assume largest buffer at clock root
 
@@ -82,39 +84,49 @@ class Fitness:
 		buffer_index_of_strategy = np.nonzero(raw_strategy)[0]
 
 		M = buffer_strategy.size # buffer level in the strategy
-
+		N = np.prod(np.array(self.branch)) # total sink numbfer
 
 		Cl   = np.zeros(M)
 		Slout = np.zeros(M)
 		Delay = np.zeros(M)
 		Delay_sigma = np.zeros(M)
-		# recording information of each buffer level
 
 		# construct load capacitance list of each clock buffer
-
 		for i in range(M-1):
 			num = np.array(self.num[buffer_index_of_strategy[i]][:(buffer_index_of_strategy[i+1]-buffer_index_of_strategy[i])])
 			wl = np.array(self.WL[buffer_index_of_strategy[i]:buffer_index_of_strategy[i+1]])
+			wc = 0
+			for j in range(len(wl)):
+				wc += np.product(num[0:j+1])*wl[j]*self.c0
 
-			Cl[i] = sum(num*wl*self.c0) + self.f1[buffer_strategy[i]]*num[-1]
+			Cl[i] = wc + self.f1[buffer_strategy[i]]*num[-1]
 
 		num = np.array(self.num[buffer_index_of_strategy[-1]])
 		wl = np.array(self.WL[buffer_index_of_strategy[-1]:])
 		Cl[M-1] = sum(num*wl*self.c0) + self.sink_cap*num[-1]
+
+
 		slew_in = self.Slin
 		# tranverse clock path
 		for i in range(M):
 			s = buffer_strategy[i]
 			Slout[i] = self.f21[s](slew_in, Cl[i])		
-			Delay[i] = self.f32[s](slew_in, Cl[i])
-			Delay_sigma[i] = self.f31[s](slew_in, Cl[i])
-			
+			Delay[i] = self.f31[s](slew_in, Cl[i])
+			Delay_sigma[i] = self.f32[s](slew_in, Cl[i])
+		
 			slew_in = Slout[i]
-			
-		sigma_skew = np.power(Delay_sigma,2).sum() + sum(self.rho_matrix[buffer_strategy[i],buffer_strategy[i+1]]*Delay_sigma[i]* Delay_sigma[i+1] for i in range(M-1))
+		
+		sigma_2 = np.power(Delay_sigma,2).sum() + sum(self.rho_matrix[buffer_strategy[i],buffer_strategy[i+1]]*Delay_sigma[i]* Delay_sigma[i+1] for i in range(M-1))
+		sigma_skew = np.sqrt(sigma_2*1.64/np.log(N))
+		# pdb.set_trace()
+		if max(Slout) > self.slew_limit:
+			return 1e-8
+		else:
+		# pdb.set_trace()
+			return (M+1)*sigma_skew
 
-		return sigma_skew 
-		# return sigma_skew 
+			
+			# return sigma_skew 
 
 
 	def objFitness(self,strategy):

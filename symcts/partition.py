@@ -25,13 +25,13 @@ class partition():
 
     def readSinks(self):
 
-        with open("{}/circuits/ex_ispd/lcd_vga".format(os.getenv('SYMCTS')),'r') as f:       
+        with open("{}/circuits/ex_ispd/mem_ctrl".format(os.getenv('SYMCTS')),'r') as f:       
             # skip first and second Line
             f.readline()
             f.readline()
             self.num_real_sinks = int(f.readline().split(" ")[2])
             
-        with open("{}/evaluation/input/lcd_vga".format(os.getenv('SYMCTS')),'r') as f:
+        with open("{}/evaluation/input/mem_ctrl".format(os.getenv('SYMCTS')),'r') as f:
 
             # skip first and second Line
             f.readline()

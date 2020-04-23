@@ -30,6 +30,19 @@ class topology():
             total_wirelength += a_wire.getLength()
         return total_wirelength
 
+    def computeTotalBufferArea(self):
+        total_area = 0
+        buffer_area_list = [] #in um^2
+        with open('{}/utils/buffer.json'.format(os.getenv('SYMCTS')),'r') as f:
+            a_dict = json.loads(f.read())
+            lib_size = a_dict['buffer_num']
+            for i in range(lib_size):
+                buffer_area_list.append(a_dict['buffers']['buf{}'.format(i)]['height']*a_dict['buffers']['buf{}'.format(i)]['width'])
+            
+        for a_buffer in self.buffers:
+            total_area += buffer_area_list[a_buffer.get_id()]
+        
+        return total_area
 
 
     def hieraMerge(self):
@@ -142,7 +155,6 @@ class topology():
 
     def construct(self):
         self.hieraMerge()
-        print("Total wirelength: {}um".format(self.computeTotalWL()/1000))
         self.gen_clockpath()
 
     def candidateBuffer(self,insert_point):
@@ -187,7 +199,7 @@ class topology():
             # write out merge point location information
             f.write("num node {}\n".format(len(self.nodes)))
             for i,node in enumerate(self.nodes):
-                f.write("{} {:.6f} {:.6f}\n".format(node.get_id(),node.location.real,node.location.imag))
+                f.write("{} {} {}\n".format(node.get_id(),int(node.location.real),int(node.location.imag)))
 
             # write out sinknode information
             f.write("num sinknode {}\n".format(self.num_sinks))
@@ -214,6 +226,12 @@ class topology():
             watch_for_nodes = [u.get_id() for u in self.nodes] + watch_for_sinks
             a_dict = {"sink":watch_for_sinks,"node":watch_for_nodes}
             json.dump(a_dict,f)
+        
+    def exportStatistics(self):
+        with open('{}/evaluation/output/statistics.txt'.format(os.getenv('SYMCTS')),'w') as f:
+            f.write("Total wirelength: {}um\n".format(self.computeTotalWL()/1000))
+            f.write("Buffer Area: {}um^2\n".format(self.computeTotalBufferArea()))
+
             
 
 

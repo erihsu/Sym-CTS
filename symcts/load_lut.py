@@ -13,9 +13,9 @@ def readindex():
 
 	with open("{}/utils/settings.json".format(os.getenv('SYMCTS')),'r') as f:
 		a_dict = json.loads(f.read())
-		input_slew = a_dict["library"]["input_slew"]
-		output_load = a_dict["library"]["output_load"]
-	return input_slew, output_load
+		input_slew = a_dict["library"]["input_slew"] # need to convert to s
+		output_load = a_dict["library"]["output_load"] # need to convert to F
+	return [slew*1e-12 for slew in input_slew], [cap*1e-15 for cap in output_load]
 
 def readlut(filepath):
 
@@ -40,10 +40,10 @@ def readlut(filepath):
 				# output_cap sweep loop 
 				for j in range(lib_size[1]):
 					data = f.readline().strip().split(" ")
-					delay_lut[i,j,0,s] = float(data[0])*1e12 # mean value of delay, convert to ps
-					delay_lut[i,j,1,s] = float(data[1])*1e12 # standard deviation of delay, convert to ps
-					slew_lut[i,j,0,s]  = float(data[2])*1e12 # mean value of output slew, convert to ps
-					slew_lut[i,j,1,s]  = float(data[3])*1e12 # standard deviation of output slew, convert to ps
+					delay_lut[i,j,0,s] = float(data[0]) # mean value of delay
+					delay_lut[i,j,1,s] = float(data[1]) # standard deviation of delay
+					slew_lut[i,j,0,s]  = float(data[2]) # mean value of output slew
+					slew_lut[i,j,1,s]  = float(data[3]) # standard deviation of output slew
 	return delay_lut,slew_lut
 
 def init_Lut(lut,x,y):
@@ -57,7 +57,7 @@ def init_Lut(lut,x,y):
 	for s in range(bufsize):
 		# lut model for a specific size
 		# using cubic interpolate 
-		model_s = interpolate.interp2d(x, y, lut[:,:,s],kind='cubic')
+		model_s = interpolate.interp2d(x, y, lut[:,:,s],kind='linear')
 		model.append(model_s)
 	return model
 
