@@ -3,39 +3,57 @@
     "buffers":{
         "buf0":{
             "name":"BUF_X2M_A9TL40",
-            "input_cap":0.757644
+            "input_cap":0.757644,
+            "height":1.26,
+            "width":0.76
         }, 
         "buf1":{
             "name":"BUF_X3M_A9TL40",
-            "input_cap":0.885091
+            "input_cap":0.885091,
+            "height":1.26,
+            "width":0.95
         },
         "buf2":{
             "name":"BUF_X4M_A9TL40",
-            "input_cap":1.288130
+            "input_cap":1.288130,
+            "height":1.26,
+            "width":1.33
         },
         "buf3":{
             "name":"BUF_X5M_A9TL40",
-            "input_cap":1.455490
+            "input_cap":1.455490,
+            "height":1.26,
+            "width":1.52
         },
         "buf4":{
             "name":"BUF_X6M_A9TL40",
-            "input_cap":1.590700
+            "input_cap":1.590700,
+            "height":1.26,
+            "width":1.71
         },
         "buf5":{
             "name":"BUF_X7P5M_A9TL40",
-            "input_cap":1.949730
+            "input_cap":1.949730,
+            "height":1.26,
+            "width":2.09
         },
         "buf6":{
             "name":"BUF_X9M_A9TL40",
-            "input_cap":2.310470
+            "input_cap":2.310470,
+            "height":1.26,
+            "width":2.47
         },
         "buf7":{
             "name":"BUF_X11M_A9TL40",
-            "input_cap":2.532740
+            "input_cap":2.532740,
+            "height":1.26,
+            "width":2.85
         },
         "buf8":{
             "name":"BUF_X16M_A9TL40",
-            "input_cap":3.788340
+            "input_cap":3.788340,
+            "height":1.26,
+            "width":4.18
         }
     },
     "vendor":"smic",
