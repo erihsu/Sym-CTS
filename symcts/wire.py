@@ -78,7 +78,7 @@ class Snake_wire(Man_wire):
             self.__wires.append(wire(self.__points[1],self.__points[2]))
             self.__wires.append(wire(self.__points[2],self.endpoint))
 
-        elif length >= 5*min_length and length <10*min_length:
+        else:
             step = (length-min_length)/8
             width1 = abs(vec.real)/3
             width2 = abs(vec.imag)/3
@@ -103,20 +103,6 @@ class Snake_wire(Man_wire):
             for i in range(10):
                 self.__wires.append(wire(self.__points[i],self.__points[i+1]))
             self.__wires.append(wire(self.__points[10],self.endpoint))
-
-        else:
-            # # update points while snaking(1 points)
-            # self.__points.append(G_Point(location=(self.startpoint.location+self.endpoint.location)/2))
-            # # update wires while snaking(2 wires)                          
-            # self.__wires.append(wire(self.startpoint,self.__points[0]))
-            # self.__wires.append(wire(self.__points[0],self.endpoint))
-
-            # update points while snaking(1 point)
-            self.__points.append(G_Point(self.turning[index].location))
-            # update wires while snaking(2 wires)
-            self.__wires.append(wire(self.startpoint,self.__points[0]))
-            self.__wires.append(wire(self.__points[0],self.endpoint))
-            print("given length {} is not considerate compared with {}".format(length,min_length))
 
     
     def no_snaking(self):

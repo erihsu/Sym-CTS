@@ -1,11 +1,12 @@
 import math
+import argparse
 import random
 import json
 import os
 
 class convertion():
 
-    def __init__(self):
+    def __init__(self,circuits_name):
         self.head = []
         self.sinks = []
         self.lines = []
@@ -18,12 +19,13 @@ class convertion():
         self.maxY = 0
         self.sink_cap = 0
         self.load_sink_cap()
+        self.circuits = circuits_name
 
     def load_sink_cap(self):
 
-        with open("{}/utils/settings.json".format(os.getenv('SYMCTS')),'r') as f:
+        with open("{}/utils/sink.json".format(os.getenv('SYMCTS')),'r') as f:
             a_dict = json.loads(f.read())
-            self.sink_cap = a_dict["library"]["sink_cap"]
+            self.sink_cap = a_dict["sink"]["input_cap"]
         
 
     def bnpPre(self):
@@ -44,7 +46,7 @@ class convertion():
 
     def readOriginFile(self):
 
-        with open("{}/circuits/ex_ispd/lcd_vga".format(os.getenv('SYMCTS')),'r') as f:
+        with open("{}/circuits/ex_ispd/{}".format(os.getenv('SYMCTS'),self.circuits),'r') as f:
             area = f.readline()
             self.head.append(area)
 
@@ -92,7 +94,7 @@ class convertion():
                     self.lines.append(line)
 
     def export_with_pseudo(self):
-        with open("{}/evaluation/input/lcd_vga".format(os.getenv('SYMCTS')),'w') as f:
+        with open("{}/evaluation/input/{}".format(os.getenv('SYMCTS'),self.circuits),'w') as f:
             for i,line in enumerate(self.head):
                 if i < 2:
                     f.write(line)
@@ -105,10 +107,16 @@ class convertion():
             for line in self.lines:
                 f.write(line)
 
-def convert_circuits():
-    convert = convertion()
+def convert_circuits(circuits):
+    convert = convertion(circuits)
     convert.readOriginFile()
     convert.export_with_pseudo()
 
 if __name__ == "__main__":
-    convert_circuits()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c','--circuit',dest='circuits',action='append',required=True,help="circuit to be converted")
+    args = parser.parse_args()
+    circuits = args.circuits
+    for a_circuits in circuits:
+        convert_circuits(a_circuits)
+    

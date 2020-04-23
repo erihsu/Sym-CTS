@@ -129,8 +129,8 @@ for $i (0 .. ($numSink - 1)) {
   $id = $1; $x = $2; $y = $3; $cap = $4; #id can be a string
   die "ERROR: 2 sinks have same sink id in $inFileO," if $ssExistInInputFile{$id}++;
   push @ssIdArr, $id;
-  push @ssXArr, $x/100;
-  push @ssYArr, $y/100;
+  push @ssXArr, $x;
+  push @ssYArr, $y;
   push @ssCapArr, $cap;
   $CountFromSsId{$id} = $ssCount++; #song:  id 在列表中的位置
   $sinkUncovered{$id} = 1;

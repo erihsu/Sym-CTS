@@ -127,13 +127,14 @@ def nextGeneration(currentGen, eliteSize, mutationRate):
 # 完整的遗传算法
 def geneticAlgorithm(buffer_lib_size, branch_level, popSize, eliteSize, mutationRate, generations):
 	pop = initialPopulation(popSize, buffer_lib_size, branch_level)
-	print("Initial objvalue: " + str(rankStrategies(pop)[0][1]))
+	initial_strategy = pop[0]
+	i_object = 1/rankStrategies(pop)[0][1]
+
 	for i in range(0, generations):
 		pop = nextGeneration(pop, eliteSize, mutationRate)
 		if i % 5 == 0:
-			print("{}th generations:{};objvalue:{}".format(i,pop[0],str(rankStrategies(pop)[0][1])))
-
-	print("Final objvalue: " + str(rankStrategies(pop)[0][1]))
+			print("{}th generations:{};objvalue:{}".format(i,pop[0],str(1/rankStrategies(pop)[0][1])))
+	o_object = 1/rankStrategies(pop)[0][1]
 	bestStrategyIndex = rankStrategies(pop)[0][0]
 	bestStrategy = pop[bestStrategyIndex]
 
@@ -141,6 +142,9 @@ def geneticAlgorithm(buffer_lib_size, branch_level, popSize, eliteSize, mutation
 	with open("{}/symcts/solution.txt".format(os.getenv('SYMCTS')),'w') as f:
 		for buffer_size in bestStrategy:
 			f.write(str(buffer_size)+"\n")
+		
+	
+	return i_object,o_object,initial_strategy,bestStrategy
 
 def main():
 	pass 
