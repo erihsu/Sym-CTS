@@ -31,10 +31,12 @@ class convertion():
     def bnpPre(self):
         bnp_pre = []
         max_level = int(math.ceil(math.sqrt(self.num_real_sinks)))
-        # # ensurance branch=2 and branch=3 can exist at the same time
-        for i in range(1, max_level):
-            for j in range(1, i):
-                bnp_pre.append((2**j)*(3**(i-j)))
+        # # enumerate all branch plan combination with all prime number smaller than max_fanout 
+        for i1 in range(0, max_level):
+            for i2 in range(0, max_level):
+                for i3 in range(0,max_level):
+                    for i4 in range(0,max_level):
+                        bnp_pre.append((2**i1)*(3**i2)*(5**i3)*(7**i4))
 
         bnp_pre = sorted(bnp_pre)
         # find the closed number to the sink_num in the bnp_pre list
