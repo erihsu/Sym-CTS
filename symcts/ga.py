@@ -65,7 +65,7 @@ def breed(parent1, parent2):
 	childP1 = []
 	childP2 = []
 
-	random_index = random.sample(range(1,len(parent1)-1), 2)
+	random_index = random.sample(range(1,len(parent1)-1),1)
 	startGene = min(random_index)
 	endGene   = max(random_index)
 

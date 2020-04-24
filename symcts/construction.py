@@ -5,7 +5,7 @@ from partition import partition
 from merge import merge,get_seg_length
 from point import Sink, M_Point,Point
 from buffer import candidate,clk_buffer
-from wire import wire,Snake_wire
+from wire import wire
 
 class topology():
 
@@ -21,7 +21,7 @@ class topology():
 
     def loadSinks(self,sinks,num_branchs):
         self.sinks = sinks
-        self.num_branchs = num_branchs
+        self.num_branchs = num_branchs[::-1]
         self.num_sinks = len(self.sinks)
 
     def computeTotalWL(self):
@@ -67,7 +67,7 @@ class topology():
                 self.wirelength.append(target_seg_length)
 
                 for j in range(int(merge_times)):
-                    merged_point,nodes,wires = merge(points[branch*j:branch*(j+1)],target_seg_length,branch)
+                    merged_point,nodes,wires = merge(points[branch*j:branch*(j+1)],target_seg_length)
                     self.nodes.extend(nodes)
                     self.nodes.append(merged_point)
                     self.wires.extend(wires)
@@ -91,7 +91,7 @@ class topology():
                 self.wirelength.append(target_seg_length)
 
                 for j in range(int(merge_times)):
-                    merged_point,nodes,wires = merge(points[branch*j:branch*(j+1)],target_seg_length,branch)
+                    merged_point,nodes,wires = merge(points[branch*j:branch*(j+1)],target_seg_length)
                     self.nodes.extend(nodes)
                     self.nodes.append(merged_point)
                     self.wires.extend(wires)
@@ -108,7 +108,7 @@ class topology():
                 # merge to get clock tree root point
                 target_seg_length = get_seg_length(merged_points)
                 self.wirelength.append(target_seg_length)
-                root,nodes,wires = merge(merged_points,target_seg_length,branch)
+                root,nodes,wires = merge(merged_points,target_seg_length)
                 self.nodes.extend(nodes)
                 self.nodes.append(root)
                 self.wires.extend(wires)
@@ -118,10 +118,7 @@ class topology():
 
                 # link root to sourcenode at (0,0)
                 self.wires.append(wire(Point(0,0),new_root))
- 
-
-
-        
+         
         self.wirelength.append(root.location.real+root.location.imag)
         # reverse order to top-down
         self.wirelength = self.wirelength[::-1]
@@ -184,9 +181,23 @@ class topology():
                 endpoint   = a_candidate.endpoint
                 # considering non-buffering branch
                 if buffer_type[i] == 0:
-                    self.wires.append(a_candidate.changeToWire())
+                    #self.wires.append(a_candidate.changeToWire())
+                    self.removeMergePoint(startpoint,endpoint)
                 else:
                     self.buffers.append(clk_buffer(startpoint,endpoint,buffer_type[i]-1))
+    
+    def removeMergePoint(self,startpoint,endpoint):
+        wire_list = self.wires
+        for a_wire in self.wires:
+            if a_wire.startpoint == endpoint or a_wire.endpoint == startpoint:
+                if a_wire.startpoint == endpoint:
+                    new_endpoint = a_wire.endpoint
+                    wire_list.remove(a_wire)
+                else:
+                    new_startpoint = a_wire.startpoint
+                    wire_list.remove(a_wire)
+        wire_list.append(wire(new_startpoint,new_endpoint))
+        self.wires = wire_list
                 
     def exportNetlist(self):
         # # #

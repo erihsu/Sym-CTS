@@ -33,7 +33,7 @@ class Fitness:
 			a_dict = json.loads(f.read())
 			self.Slin  = a_dict['symcts']['Slin']*1e-12 #convert to s
 			self.max_cap_limit = a_dict['library']['output_load_upper']*1e-15 #convert to F
-			self.slew_limit = a_dict['symcts']['slew_max']*1e-12 #convert to s
+			self.slew_limit = a_dict['symcts']['max_transition']*1e-12 #convert to s
 
 		self.rho_matrix = np.load('{}/utils/rho_matrix.npy'.format(os.getenv('SYMCTS')))
 

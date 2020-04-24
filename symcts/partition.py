@@ -1,12 +1,12 @@
 import cmath
 import numpy as np
 import os
-
 from point import Sink
 
 class partition():
 
-    def __init__(self):
+    def __init__(self,circuits_name):
+        self.circuits = circuits_name
         self.sinks = []
         self.num_real_sinks = 0
         self.num_pseudo_sinks = 0
@@ -14,7 +14,6 @@ class partition():
         self.num_branchs = []
 
     def bnp(self):
-        # n represent number of subtree needed in the design considering 2-3 mixed branch planning
         n = self.num_sinks
         while n > 1:
             for i in range(2, int(n+1)):
@@ -25,13 +24,13 @@ class partition():
 
     def readSinks(self):
 
-        with open("{}/circuits/ex_ispd/mem_ctrl".format(os.getenv('SYMCTS')),'r') as f:       
+        with open("{}/circuits/ex_ispd/{}".format(os.getenv('SYMCTS'),self.circuits),'r') as f:       
             # skip first and second Line
             f.readline()
             f.readline()
             self.num_real_sinks = int(f.readline().split(" ")[2])
             
-        with open("{}/evaluation/input/mem_ctrl".format(os.getenv('SYMCTS')),'r') as f:
+        with open("{}/evaluation/input/{}".format(os.getenv('SYMCTS'),self.circuits),'r') as f:
 
             # skip first and second Line
             f.readline()
@@ -67,126 +66,57 @@ class partition():
         else:
             return cmath.phase(complex_number)
 
-    def find_two_group(self,points,group_id):
+    def find_group(self,points,group_id,group_number):
 
+        result_part = []
         location = [u.location for u in points]
-        center = self.find_center(location)
-
+        center = self.find_center(location)    
         for point in points:
-            point.relative_location = point.location - center
+            point.relative_location = point.location - center    
 
         # sorted points by relative location 
         points = sorted(points,key=lambda point:self.get_angle_of_complex(point.relative_location))
-
         sorted_location = [u.location for u in points]
-
-        part_length = int(len(points)/2)
+        part_length = int(len(points)/group_number)
         min_len = np.inf
         final_start_cut = 0
-        # find final start cut when minimizing the cost
+        
         for start_cut in range(part_length):
-            # len(part1) == len(part2)
-            part1 = sorted_location[start_cut:start_cut+part_length]
-            part2 = sorted_location[0:start_cut] + sorted_location[start_cut+part_length:]
-            center1 = self.find_center(part1)
-            center2 = self.find_center(part2)
-            sub2_dis1 = np.array(part1) - center1
-            sub2_dis2 = np.array(part2) - center2
-            sub1_dis1 = np.array(center1) - center
-            sub1_dis2 = np.array(center2) - center 
-            total_dis1 = np.abs(sub2_dis1) + np.abs(sub1_dis1)
-            total_dis2 = np.abs(sub2_dis2) + np.abs(sub1_dis2)
-
-            total_dis  = np.concatenate((total_dis1,total_dis2))
-            u = total_dis.std()
-            # compute max distance in a meshgrid (max distance between part1 and part2)
-            # m1,n1 = np.meshgrid(part1,part1)
-            # m2,n2 = np.meshgrid(part2,part2)
-            # # cost function
-            # u = (abs(m1-n1).max() - abs(m1-n1).min())+(abs(m2-n2).max() - abs(m2-n2).min())
-
+            distance = []
+            for i in range(group_number):
+                if i == 0:
+                    part = sorted_location[0:start_cut] + sorted_location[start_cut+part_length:]
+                    estimate_distance = np.array(part) - center
+                    distance.extend(estimate_distance.tolist())
+                else:
+                    step_length = part_length*(i-1)
+                    part = sorted_location[start_cut+step_length:start_cut+step_length+part_length]
+                    estimate_distance = np.array(part) - center
+                    distance.extend(estimate_distance.tolist())
+            # pdb.set_trace()
+            u = np.array(distance).max()
             if u < min_len:
                 final_start_cut = start_cut
                 min_len = u
+        
         # partition
-        part1 = points[final_start_cut:final_start_cut+part_length]
-        part2 = points[0:final_start_cut] + points[final_start_cut+part_length:]
-        for p1 in part1:
-            p1.append_gid(group_id)
-        for p2 in part2:
-            p2.append_gid(group_id+1)
-        return [part1, part2]
+        for i in range(group_number):
+            if i == 0:
+                a_part = points[0:final_start_cut] + points[final_start_cut+part_length:]
+            else:
+                step_length = part_length*(i-1)
+                a_part = points[final_start_cut+step_length:final_start_cut+part_length+step_length]
+            
+            for p in a_part:
+                p.append_gid(group_id+i)
 
-    def find_three_group(self,points,group_id):
-
-        location = [u.location for u in points]
-        center = self.find_center(location)
-
-        for point in points:
-            point.relative_location = point.location - center
-
-        points = sorted(points,key=lambda point:self.get_angle_of_complex(point.relative_location))
-
-        sorted_location = [u.location for u in points]
-
-        part_length = int(len(points)/2)
-        min_len = np.inf
-        final_start_cut = 0
-
-        part_length = int(len(location)/3)
-        min_len = np.inf
-        final_start_cut = 0
-        # find final start cut when minimizing the cost
-        for start_cut in range(part_length):
-            # len(part1) == len(part2) == len(part3)
-            part1 = sorted_location[start_cut:start_cut+part_length]
-            part2 = sorted_location[start_cut+part_length:start_cut+2*part_length]
-            part3 = sorted_location[0:start_cut] + sorted_location[start_cut+2*part_length:]
-            center1 = self.find_center(part1)
-            center2 = self.find_center(part2)
-            center3 = self.find_center(part3)
-            sub2_dis1 = np.array(part1) - center1
-            sub2_dis2 = np.array(part2) - center2
-            sub2_dis3 = np.array(part3) - center3 
-            sub1_dis1 = np.array(center1) - center
-            sub1_dis2 = np.array(center2) - center 
-            sub1_dis3 = np.array(center3) - center
-            total_dis1 = np.abs(sub2_dis1) + np.abs(sub1_dis1)
-            total_dis2 = np.abs(sub2_dis2) + np.abs(sub1_dis2)
-            total_dis3 = np.abs(sub2_dis3) + np.abs(sub1_dis3)
-
-            total_dis  = np.concatenate((total_dis1,total_dis2,total_dis3))
-            u  = total_dis.std()
-            # m1,n1 = np.meshgrid(part1,part1)
-            # m2,n2 = np.meshgrid(part2,part2)
-            # m3,n3 = np.meshgrid(part3,part3)
-            # # cost function
-            # u = abs(m1-n1).max() + abs(m2-n2).max() + abs(m3-n3).max() - abs(m1-n1).min() - abs(m2-n2).min() - abs(m3-n3).min()
-
-            if u < min_len:
-                final_start_cut = start_cut
-                min_len = u
-        # partition
-        part1 = points[final_start_cut:final_start_cut+part_length]
-        part2 = points[final_start_cut+part_length:final_start_cut+2*part_length]
-        part3 = points[0:final_start_cut] + points[final_start_cut+2*part_length:]
-        for p1 in part1:
-            p1.append_gid(group_id)
-        for p2 in part2:
-            p2.append_gid(group_id+1)
-        for p3 in part3:
-            p3.append_gid(group_id+2)
-        return [part1, part2, part3]
+            result_part.append(a_part)
+        
+        return result_part
 
     def cake_cut(self,points,cls_num,group_id=0):
-        # the cls_num is limited to 2 or 3
-        if not (cls_num == 2 or cls_num == 3):
-            print("branch number except 2 or 3 is not supported")
-            exit(1)
-        elif cls_num == 2:
-            grouped = self.find_two_group(points,group_id)
-        else:
-            grouped = self.find_three_group(points,group_id)
+
+        grouped = self.find_group(points,group_id,cls_num)
 
         return grouped
 
