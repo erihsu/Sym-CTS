@@ -18,7 +18,9 @@
         },
     "symcts":{
         "Slin":200,
-        "slew_max":200
+        "max_transition":200,
+	"max_branch":10,
+        "max_fanout":10
             },
     "evaluation":{
         "voltage":0.55,
