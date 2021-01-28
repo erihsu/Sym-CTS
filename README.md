@@ -4,6 +4,7 @@
 Sym-CTS is my graduate design which aims to design a symmetric clock tree for Near Threshold-Voltage(NTV) or Ultra-low voltage(ULV) Integrated Circuits Design. Circuits working at NTV suffers great variation and the performance of clock tree can be greatly reduced because of timing variation on clock buffers and clock gates. And symmetric clock tree synthesis(CTS) is a effective way to achieve a robost clock tree design under NTV or ULV.  
 
 The project is currently based on Python3.7.
+Warning: The repository is prepared to migrate to Rust version.
 
 ## Sym-CTS Flow Outline
 1.  Partition
