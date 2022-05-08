@@ -187,16 +187,23 @@ class topology():
                     self.buffers.append(clk_buffer(startpoint,endpoint,buffer_type[i]-1))
     
     def removeMergePoint(self,startpoint,endpoint):
+        own_end_point = False
+        own_start_point = False
         wire_list = self.wires
         for a_wire in self.wires:
             if a_wire.startpoint == endpoint or a_wire.endpoint == startpoint:
                 if a_wire.startpoint == endpoint:
+                    own_end_point = True
                     new_endpoint = a_wire.endpoint
                     wire_list.remove(a_wire)
                 else:
+                    own_start_point = True
                     new_startpoint = a_wire.startpoint
                     wire_list.remove(a_wire)
-        wire_list.append(wire(new_startpoint,new_endpoint))
+                if own_end_point and own_start_point:
+                    wire_list.append(wire(new_startpoint,new_endpoint))
+                    own_end_point = False
+
         self.wires = wire_list
                 
     def exportNetlist(self):

@@ -27,7 +27,7 @@ Warning: The repository is prepared to migrate to Rust version.
 * **Hspice-2016**
 
 ### Flow it
-The whole workflow is compeleted by Makefile(TBD). Before ```make```,make sure ```SYMCTS``` environment variable in the current user. Export ```SYMCTS``` in your shell.
+The given Makefile is only an example of ```usb_phy``` circuits. Before ```make```,make sure ```SYMCTS``` environment variable in the current user. Export ```SYMCTS``` in your shell.
 
 
 ```
